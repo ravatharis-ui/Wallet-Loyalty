@@ -43,7 +43,12 @@ export async function notifyRewardAvailable(params: {
     .limit(5)
     .returns<Pick<Message, "type" | "created_at">[]>();
 
-  if (!shouldNotifyReward({ email: customer.email, sentMessages: sentMessages ?? [] }, params.earnedAt)) {
+  if (
+    !shouldNotifyReward(
+      { email: customer.email, sentMessages: sentMessages ?? [] },
+      params.earnedAt,
+    )
+  ) {
     return;
   }
 

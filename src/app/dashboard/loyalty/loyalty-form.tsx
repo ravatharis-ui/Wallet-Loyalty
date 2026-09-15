@@ -10,10 +10,7 @@ import { Alert } from "@/components/ui/alert";
 import { SubmitButton } from "@/components/submit-button";
 
 export function LoyaltyForm({ program }: { program: LoyaltyProgram | null }) {
-  const [state, formAction] = useActionState<ActionState, FormData>(
-    saveLoyaltyProgramAction,
-    {},
-  );
+  const [state, formAction] = useActionState<ActionState, FormData>(saveLoyaltyProgramAction, {});
   const [threshold, setThreshold] = useState(program?.reward_threshold ?? 10);
   const [rewardName, setRewardName] = useState(program?.reward_name ?? "1 café offert");
 

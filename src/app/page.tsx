@@ -87,7 +87,9 @@ export default function HomePage() {
             <p className="text-4xl font-bold">
               49 € <span className="text-base font-normal text-muted-foreground">/ mois</span>
             </p>
-            <p className="mt-1 text-sm text-muted-foreground">14 jours gratuits, sans engagement.</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              14 jours gratuits, sans engagement.
+            </p>
             <ul className="mt-6 space-y-2 text-sm">
               {[
                 "Clients et visites illimités",

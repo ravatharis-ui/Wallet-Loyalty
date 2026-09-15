@@ -84,7 +84,9 @@ export default async function RewardsPage() {
           ))
         ) : (
           <Card>
-            <p className="text-sm text-muted-foreground">Aucune récompense utilisée pour l&apos;instant.</p>
+            <p className="text-sm text-muted-foreground">
+              Aucune récompense utilisée pour l&apos;instant.
+            </p>
           </Card>
         )}
       </section>

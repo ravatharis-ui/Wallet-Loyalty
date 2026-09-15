@@ -46,7 +46,9 @@ export default async function CustomersPage({
   if (filter === "reward") {
     query = supabase
       .from("customers")
-      .select("id, first_name, phone, current_points, total_visits, last_visit_at, rewards!inner(id)")
+      .select(
+        "id, first_name, phone, current_points, total_visits, last_visit_at, rewards!inner(id)",
+      )
       .eq("business_id", session.businessId)
       .eq("rewards.status", "available")
       .order("last_visit_at", { ascending: false, nullsFirst: false })
@@ -64,7 +66,10 @@ export default async function CustomersPage({
     }
   }
 
-  const term = q.trim().slice(0, 40).replace(/[%_,()]/g, " ");
+  const term = q
+    .trim()
+    .slice(0, 40)
+    .replace(/[%_,()]/g, " ");
   if (term.length >= 2) {
     query = query.or(`first_name.ilike.%${term}%,phone.ilike.%${term}%`);
   }
@@ -75,7 +80,9 @@ export default async function CustomersPage({
     <div className="space-y-5">
       <header>
         <h1 className="text-2xl font-bold">Clients</h1>
-        <p className="text-sm text-muted-foreground">{customers?.length ?? 0} client(s) affiché(s)</p>
+        <p className="text-sm text-muted-foreground">
+          {customers?.length ?? 0} client(s) affiché(s)
+        </p>
       </header>
 
       {deleted ? <Alert variant="success">Client supprimé.</Alert> : null}

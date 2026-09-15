@@ -29,10 +29,7 @@ async function uniqueSlug(
   return `${base}-${Date.now().toString(36)}`;
 }
 
-export async function signupAction(
-  _prev: ActionState,
-  formData: FormData,
-): Promise<ActionState> {
+export async function signupAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
   const parsed = signupSchema.safeParse({
     businessName: formData.get("businessName"),
     email: formData.get("email"),
@@ -110,10 +107,7 @@ export async function signupAction(
   redirect("/dashboard");
 }
 
-export async function loginAction(
-  _prev: ActionState,
-  formData: FormData,
-): Promise<ActionState> {
+export async function loginAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
   const parsed = loginSchema.safeParse({
     email: formData.get("email"),
     password: formData.get("password"),

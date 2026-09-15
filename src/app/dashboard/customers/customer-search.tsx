@@ -5,13 +5,7 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
-export function CustomerSearch({
-  defaultValue,
-  filter,
-}: {
-  defaultValue: string;
-  filter: string;
-}) {
+export function CustomerSearch({ defaultValue, filter }: { defaultValue: string; filter: string }) {
   const router = useRouter();
   const [value, setValue] = useState(defaultValue);
 

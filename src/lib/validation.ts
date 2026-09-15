@@ -1,7 +1,6 @@
 import { z } from "zod";
 
-const trimmed = (min: number, max: number) =>
-  z.string().trim().min(min).max(max);
+const trimmed = (min: number, max: number) => z.string().trim().min(min).max(max);
 
 /** Numéro de téléphone : on reste permissif (formats FR et internationaux). */
 export const phoneSchema = z
@@ -29,7 +28,10 @@ export const loginSchema = z.object({
 
 export const businessSchema = z.object({
   name: trimmed(2, 80),
-  phone: z.union([phoneSchema, z.literal("")]).optional().transform((v) => (v ? v : null)),
+  phone: z
+    .union([phoneSchema, z.literal("")])
+    .optional()
+    .transform((v) => (v ? v : null)),
   email: optionalEmailSchema,
 });
 

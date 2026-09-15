@@ -4,11 +4,7 @@
  */
 
 export type RewardStatus = "available" | "redeemed" | "expired";
-export type MessageType =
-  | "inactive_30_days"
-  | "inactive_60_days"
-  | "reward_available"
-  | "campaign";
+export type MessageType = "inactive_30_days" | "inactive_60_days" | "reward_available" | "campaign";
 export type MessageChannel = "email" | "sms";
 export type MessageStatus = "pending" | "sent" | "failed" | "skipped";
 export type AudienceType = "all" | "inactive_30_days" | "reward_available";

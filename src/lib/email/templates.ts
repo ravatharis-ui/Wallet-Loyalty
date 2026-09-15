@@ -91,9 +91,7 @@ Au plaisir de vous revoir !`;
   };
 }
 
-export function rewardAvailableEmail(
-  ctx: EmailContext & { rewardName: string },
-): RenderedEmail {
+export function rewardAvailableEmail(ctx: EmailContext & { rewardName: string }): RenderedEmail {
   const subject = "Votre récompense vous attend 🎁";
   const text = `Bravo ${ctx.firstName} !
 

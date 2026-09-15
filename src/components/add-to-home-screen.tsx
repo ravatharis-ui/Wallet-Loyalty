@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { Button } from "@/components/ui/button";
 
 interface BeforeInstallPromptEvent extends Event {
@@ -8,15 +8,37 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
 }
 
+const noopSubscribe = () => () => {};
+
+function useIsStandalone(): boolean {
+  return useSyncExternalStore(
+    (onChange) => {
+      const query = window.matchMedia("(display-mode: standalone)");
+      query.addEventListener("change", onChange);
+      return () => query.removeEventListener("change", onChange);
+    },
+    () => window.matchMedia("(display-mode: standalone)").matches,
+    () => false,
+  );
+}
+
+function useIsIos(): boolean {
+  return useSyncExternalStore(
+    noopSubscribe,
+    () => /iphone|ipad|ipod/i.test(window.navigator.userAgent),
+    () => false,
+  );
+}
+
 /**
- * Bouton "Ajouter à l'écran d'accueil".
+ * Bouton « Ajouter à l'écran d'accueil ».
  * Utilise l'API d'installation PWA quand elle existe (Android / Chrome),
  * sinon affiche l'instruction iOS.
  */
 export function AddToHomeScreen() {
   const [promptEvent, setPromptEvent] = useState<BeforeInstallPromptEvent | null>(null);
-  const [isIos, setIsIos] = useState(false);
-  const [installed, setInstalled] = useState(false);
+  const isStandalone = useIsStandalone();
+  const isIos = useIsIos();
 
   useEffect(() => {
     const onPrompt = (event: Event) => {
@@ -24,14 +46,10 @@ export function AddToHomeScreen() {
       setPromptEvent(event as BeforeInstallPromptEvent);
     };
     window.addEventListener("beforeinstallprompt", onPrompt);
-
-    setIsIos(/iphone|ipad|ipod/i.test(window.navigator.userAgent));
-    setInstalled(window.matchMedia("(display-mode: standalone)").matches);
-
     return () => window.removeEventListener("beforeinstallprompt", onPrompt);
   }, []);
 
-  if (installed) return null;
+  if (isStandalone) return null;
 
   if (promptEvent) {
     return (

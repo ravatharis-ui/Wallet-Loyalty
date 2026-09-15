@@ -38,7 +38,11 @@ export default async function CardPage({
 
   return (
     <main className="mx-auto flex min-h-dvh max-w-md flex-col px-5 py-8">
-      {isNew ? <Alert variant="success">Votre carte est prête ! Ajoutez-la à votre écran d&apos;accueil.</Alert> : null}
+      {isNew ? (
+        <Alert variant="success">
+          Votre carte est prête ! Ajoutez-la à votre écran d&apos;accueil.
+        </Alert>
+      ) : null}
       {existing ? <Alert>Vous aviez déjà une carte chez {business.name}. La voici.</Alert> : null}
 
       <section className="mt-4 rounded-2xl border border-border bg-background p-6 shadow-sm">
@@ -72,9 +76,7 @@ export default async function CardPage({
               : progressLabel(customer.current_points, rules)}
           </p>
           {!hasReward && visitsUntilReward(customer.current_points, rules) > 0 && program ? (
-            <p className="text-sm text-muted-foreground">
-              Objectif : {program.reward_name}
-            </p>
+            <p className="text-sm text-muted-foreground">Objectif : {program.reward_name}</p>
           ) : null}
         </div>
 

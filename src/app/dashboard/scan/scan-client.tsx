@@ -193,7 +193,12 @@ export function ScanClient() {
               Client suivant
             </Button>
           ) : (
-            <Button size="lg" className="h-16 w-full text-lg" onClick={handleAddVisit} disabled={pending}>
+            <Button
+              size="lg"
+              className="h-16 w-full text-lg"
+              onClick={handleAddVisit}
+              disabled={pending}
+            >
               {pending ? "Enregistrement…" : "+1 visite"}
             </Button>
           )}

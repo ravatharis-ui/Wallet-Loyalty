@@ -11,16 +11,16 @@ Prix cible : 49 €/mois par commerce, 14 jours d'essai.
 
 ## Stack
 
-| Couche        | Choix                                              |
-| ------------- | -------------------------------------------------- |
-| Framework     | Next.js 16 (App Router), TypeScript strict          |
-| UI            | Tailwind CSS v4 + composants style shadcn/ui        |
-| Données       | Supabase (PostgreSQL + Auth + RLS)                  |
-| Paiement      | Stripe Checkout + Billing Portal + Webhooks         |
-| Email         | Resend                                              |
-| Cron          | Vercel Cron -> `/api/cron/reminders` (Bearer token) |
-| Tests         | Vitest (logique métier) + Playwright (E2E)          |
-| Hébergement   | Vercel                                              |
+| Couche      | Choix                                               |
+| ----------- | --------------------------------------------------- |
+| Framework   | Next.js 16 (App Router), TypeScript strict          |
+| UI          | Tailwind CSS v4 + composants style shadcn/ui        |
+| Données     | Supabase (PostgreSQL + Auth + RLS)                  |
+| Paiement    | Stripe Checkout + Billing Portal + Webhooks         |
+| Email       | Resend                                              |
+| Cron        | Vercel Cron -> `/api/cron/reminders` (Bearer token) |
+| Tests       | Vitest (logique métier) + Playwright (E2E)          |
+| Hébergement | Vercel                                              |
 
 ## Arborescence
 
@@ -60,7 +60,7 @@ e2e/                             Playwright
 
 `businesses` — le commerce (tenant).
 `profiles` — lie un utilisateur Supabase Auth à un `business_id` + rôle.
-  Un utilisateur = un commerce au MVP, mais la table permet d'en ajouter d'autres plus tard.
+Un utilisateur = un commerce au MVP, mais la table permet d'en ajouter d'autres plus tard.
 `loyalty_programs` — 1 programme actif par commerce (`points_per_visit`, `reward_threshold`).
 `customers` — clients du commerce, identifiés publiquement par `card_token` (32 hex aléatoires).
 `visits` — historique immuable des visites.

@@ -4,9 +4,7 @@ import "server-only";
 export function requireEnv(name: string): string {
   const value = process.env[name];
   if (!value) {
-    throw new Error(
-      `Variable d'environnement manquante : ${name}. Voir .env.example.`,
-    );
+    throw new Error(`Variable d'environnement manquante : ${name}. Voir .env.example.`);
   }
   return value;
 }
