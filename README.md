@@ -116,8 +116,16 @@ SUPABASE_SERVICE_ROLE_KEY=... pnpm test:e2e
 ## Déploiement (Vercel)
 
 1. Importer le dépôt sur Vercel.
+   La **branche de production** se règle dans Settings → Environments → Production →
+   Branch Tracking. Elle ne s'applique qu'aux commits poussés _ensuite_ : après
+   l'avoir changée, poussez un commit (ou utilisez Redeploy sur un déploiement de
+   la bonne branche) pour obtenir un vrai déploiement.
 2. Renseigner toutes les variables de `.env.example` dans les settings du projet
-   (`NEXT_PUBLIC_APP_URL` = domaine de production).
+   (`NEXT_PUBLIC_APP_URL` = domaine de production). Les `NEXT_PUBLIC_*` sont
+   inlinées au build et doivent être de type _Config_ (non sensible) ;
+   `SUPABASE_SERVICE_ROLE_KEY` et `CRON_SECRET` sont des secrets serveur.
+   Tout changement d'une `NEXT_PUBLIC_*` exige un redéploiement pour être pris
+   en compte.
 3. Déployer : `vercel.json` active automatiquement le cron quotidien.
 4. Pointer le webhook Stripe de production sur le domaine final.
 5. Vérifier sur smartphone : inscription client, carte, scanner (la caméra
