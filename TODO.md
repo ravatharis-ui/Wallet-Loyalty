@@ -77,14 +77,25 @@ Statut : `[ ]` à faire · `[x]` terminé
 
 ---
 
-## État au terme du MVP
+## État — MVP déployé et validé en production
 
-Toutes les phases sont implémentées. Points à traiter avant la mise en production
-réelle :
+Déployé sur Vercel (`wallet-loyalty-phi.vercel.app`), base Supabase migrée avec
+RLS active sur les 9 tables.
 
-- Appliquer la migration sur un projet Supabase et lancer les suites
-  d'intégration + E2E (elles sont ignorées sans variables d'environnement).
-- Créer le produit Stripe 49 €/mois et brancher le webhook de production.
-- Vérifier le domaine d'envoi Resend.
-- Sentry et PostHog volontairement non intégrés au MVP (voir ARCHITECTURE.md) :
-  à ajouter quand les premiers commerçants payants seront en place.
+**Parcours vérifié manuellement de bout en bout** : inscription commerçant →
+programme de fidélité → QR d'inscription → inscription client → carte digitale
+avec QR personnel → scan par le commerçant → ajout d'une visite.
+
+### Reste à faire
+
+- [ ] **Resend** : brancher la clé API et vérifier le domaine d'envoi. Sans cela
+      les relances 30/60 jours et la notification de récompense sont créées en
+      base avec le statut `failed` au lieu d'être envoyées.
+- [ ] **Stripe** : produit 49 €/mois, webhook de production. En attendant, chaque
+      commerce démarre avec 14 jours d'essai accordés localement.
+- [ ] **Suites d'intégration et E2E** : écrites mais jamais exécutées contre une
+      base réelle (isolation RLS entre commerces, atomicité de `add_visit`,
+      parcours Playwright). À lancer sur un projet Supabase de test.
+- [ ] **Sauvegardes Supabase** : absentes sur le plan Free. À régler avant
+      d'héberger les données de vrais clients.
+- [ ] Sentry / PostHog : volontairement hors MVP (voir ARCHITECTURE.md).
