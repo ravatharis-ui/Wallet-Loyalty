@@ -93,22 +93,27 @@ RLS active sur les 9 tables.
 
 ### 🔴 Bloquant — avant d'encaisser le premier euro
 
-- [ ] **Plan Vercel Pro** (~20 $/mois). Le plan Hobby interdit l'usage commercial :
-      c'est une condition contractuelle, pas une limite technique.
+- [ ] **Plan Vercel Pro** (~20 $/mois) — décision : reporté au premier client
+      payant. Le plan Hobby interdit l'usage commercial : à basculer le jour où
+      vous facturez, pas avant.
 - [x] ~~Structure juridique~~ : HERA 1, EURL immatriculée au RCS de Saint-Denis.
 - [x] ~~Mentions légales~~ : renseignées dans `src/lib/legal.ts`.
 - [ ] **Stripe en mode live** : activer le compte (SIRET + IBAN), puis recréer
       produit, tarif et webhook en live et remplacer les 4 variables Vercel.
       Rien du mode test n'est réutilisable.
-- [ ] **Nom de domaine** (~10 €/an) : plus crédible que `*.vercel.app` face à un
-      commerçant, et nécessaire pour l'email.
-- [ ] **Domaine d'envoi vérifié dans Resend** (3 enregistrements DNS). Sans lui,
-      le bac à sable n'écrit qu'à vous : aucun client réel ne reçoit de relance.
+- [ ] **Nom de domaine (~7 €/an) + vérification Resend** — décision : reporté au
+      jour de la signature du premier client, pour limiter les frais.
+      ⚠️ Tant qu'il n'est pas en place, **aucune relance ne part vers de vrais
+      clients** : le bac à sable Resend n'écrit qu'à l'adresse du compte. À acheter
+      le jour même de la signature, avant d'installer le commerce, car la
+      propagation DNS prend quelques heures.
+      Pour démontrer les relances en attendant : inscrivez-vous comme client de
+      test avec votre propre adresse et montrez l'email reçu.
 
 ### 🟠 Avant de confier de vraies données
 
-- [ ] **Sauvegardes Supabase** (plan Pro, ~25 $/mois). Absentes en Free : perdre
-      les cartes d'un commerce serait irrattrapable commercialement.
+- [ ] **Sauvegardes** — absentes sur Supabase Free. Plutôt que les 25 $/mois du
+      plan Pro : `pg_dump` hebdomadaire via GitHub Actions, gratuit. À monter.
 - [ ] **Lancer les suites d'intégration et E2E** contre un projet Supabase de
       test (isolation RLS entre commerces, atomicité de `add_visit`, parcours
       Playwright). Écrites, jamais exécutées. Commandes dans le README.
