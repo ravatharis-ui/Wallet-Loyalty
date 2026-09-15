@@ -21,6 +21,9 @@ function explain(error: unknown): string {
   if (message.includes("Variable d'environnement manquante")) {
     return `${message} Ajoutez-la dans les variables d'environnement puis redéployez.`;
   }
+  if (message.includes("recurring price")) {
+    return "Ce tarif Stripe est un paiement unique, pas un abonnement. Dans Stripe, créez un nouveau tarif « Récurrent » (période mensuelle ou annuelle selon la formule), puis remplacez STRIPE_PRICE_ID ou STRIPE_PRICE_ID_YEARLY.";
+  }
   if (message.includes("No such price")) {
     return "Tarif Stripe introuvable. Vérifiez STRIPE_PRICE_ID : il doit commencer par « price_ » (et non « prod_ ») et appartenir au même mode (test ou live) que votre clé secrète.";
   }
