@@ -1,7 +1,13 @@
 import Link from "next/link";
 import { QrCode, Smartphone, Zap, MailCheck, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { PRICE_LABEL, TRIAL_DAYS } from "@/lib/pricing";
+import {
+  PRICE_LABEL,
+  PRICE_YEARLY_LABEL,
+  PRICE_YEARLY_PER_MONTH_LABEL,
+  TRIAL_DAYS,
+  YEARLY_FREE_MONTHS,
+} from "@/lib/pricing";
 
 const steps = [
   {
@@ -91,6 +97,10 @@ export default function HomePage() {
             </p>
             <p className="mt-1 text-sm text-muted-foreground">
               {TRIAL_DAYS} jours gratuits, sans engagement.
+            </p>
+            <p className="mt-4 rounded-xl bg-muted px-4 py-3 text-sm">
+              <strong>Ou {PRICE_YEARLY_LABEL} par an</strong>, payés en une fois — soit{" "}
+              {PRICE_YEARLY_PER_MONTH_LABEL} par mois, {YEARLY_FREE_MONTHS} mois offerts.
             </p>
             <ul className="mt-6 space-y-2 text-sm">
               {[

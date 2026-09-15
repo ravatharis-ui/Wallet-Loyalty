@@ -2,6 +2,7 @@ import "server-only";
 import Stripe from "stripe";
 import { requireEnv, optionalEnv } from "@/lib/env";
 import type { SubscriptionStatus } from "@/lib/db.types";
+import type { Plan } from "@/lib/pricing";
 
 let client: Stripe | null = null;
 
@@ -17,6 +18,16 @@ export function trialDays(): number | undefined {
   if (!raw) return undefined;
   const value = Number(raw);
   return Number.isFinite(value) && value > 0 ? Math.trunc(value) : undefined;
+}
+
+/** Tarif Stripe correspondant à la formule choisie. */
+export function priceIdFor(plan: Plan): string {
+  return plan === "yearly" ? requireEnv("STRIPE_PRICE_ID_YEARLY") : requireEnv("STRIPE_PRICE_ID");
+}
+
+/** La formule annuelle n'est proposée que si son tarif est configuré. */
+export function yearlyPlanAvailable(): boolean {
+  return Boolean(optionalEnv("STRIPE_PRICE_ID_YEARLY"));
 }
 
 const KNOWN_STATUSES: SubscriptionStatus[] = [

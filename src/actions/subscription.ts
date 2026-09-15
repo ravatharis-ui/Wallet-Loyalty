@@ -3,8 +3,9 @@
 import { redirect } from "next/navigation";
 import { requireMerchant } from "@/lib/auth";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { stripe, trialDays } from "@/lib/stripe";
-import { appUrl, requireEnv } from "@/lib/env";
+import { stripe, trialDays, priceIdFor } from "@/lib/stripe";
+import { appUrl } from "@/lib/env";
+import { planSchema } from "@/lib/validation";
 
 export interface SubscriptionState {
   error?: string;
@@ -50,9 +51,14 @@ function explain(error: unknown): string {
  */
 export async function startCheckoutAction(
   _prev: SubscriptionState,
-  _formData: FormData,
+  formData: FormData,
 ): Promise<SubscriptionState> {
   const session = await requireMerchant();
+
+  // La formule vient du bouton cliqué, jamais un identifiant de tarif brut.
+  const plan = planSchema.safeParse(formData.get("plan"));
+  if (!plan.success) return { error: "Formule d'abonnement inconnue." };
+
   let checkoutUrl: string;
 
   // redirect() lève une exception interne à Next : il doit rester hors du try.
@@ -87,13 +93,13 @@ export async function startCheckoutAction(
     const checkout = await stripe().checkout.sessions.create({
       mode: "subscription",
       customer: customerId,
-      line_items: [{ price: requireEnv("STRIPE_PRICE_ID"), quantity: 1 }],
+      line_items: [{ price: priceIdFor(plan.data), quantity: 1 }],
       client_reference_id: session.businessId,
       subscription_data: {
-        metadata: { business_id: session.businessId },
+        metadata: { business_id: session.businessId, plan: plan.data },
         ...(trial ? { trial_period_days: trial } : {}),
       },
-      metadata: { business_id: session.businessId },
+      metadata: { business_id: session.businessId, plan: plan.data },
       allow_promotion_codes: true,
       success_url: `${appUrl()}/dashboard/settings?abonnement=ok`,
       cancel_url: `${appUrl()}/dashboard/settings?abonnement=annule`,

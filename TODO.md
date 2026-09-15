@@ -99,8 +99,8 @@ RLS active sur les 9 tables.
 - [x] ~~Structure juridique~~ : HERA 1, EURL immatriculée au RCS de Saint-Denis.
 - [x] ~~Mentions légales~~ : renseignées dans `src/lib/legal.ts`.
 - [ ] **Stripe en mode live** : activer le compte (SIRET + IBAN), puis recréer
-      produit, tarif et webhook en live et remplacer les 4 variables Vercel.
-      Rien du mode test n'est réutilisable.
+      produit, **les deux tarifs** (49,90 €/mois et 480 €/an) et webhook en live,
+      et remplacer les 5 variables Vercel. Rien du mode test n'est réutilisable.
 - [ ] **Nom de domaine (~7 €/an) + vérification Resend** — décision : reporté au
       jour de la signature du premier client, pour limiter les frais.
       ⚠️ Tant qu'il n'est pas en place, **aucune relance ne part vers de vrais

@@ -50,8 +50,12 @@ pnpm dev
 
 ### 2. Stripe
 
-1. Créer un produit « Fidelia » avec un prix récurrent de **49 € / mois**.
-2. Renseigner `STRIPE_SECRET_KEY`, `STRIPE_PRICE_ID` et `STRIPE_TRIAL_DAYS=14`.
+1. Créer un produit « Fidelia » avec deux tarifs récurrents : **49,90 € / mois**
+   et **480 € / an** (payé en une fois). Les montants affichés dans l'application
+   viennent de `src/lib/pricing.ts` et doivent correspondre aux tarifs Stripe.
+2. Renseigner `STRIPE_SECRET_KEY`, `STRIPE_PRICE_ID`, `STRIPE_PRICE_ID_YEARLY`
+   et `STRIPE_TRIAL_DAYS=14`. Sans `STRIPE_PRICE_ID_YEARLY`, seule la formule
+   mensuelle est proposée.
 3. Webhook vers `https://VOTRE-DOMAINE/api/stripe/webhook`, événements :
    `checkout.session.completed`, `customer.subscription.created`,
    `customer.subscription.updated`, `customer.subscription.deleted`,

@@ -71,6 +71,9 @@ export const cardTokenSchema = z
 
 export const uuidSchema = z.string().uuid();
 
+/** Formule d'abonnement choisie par le commerçant. */
+export const planSchema = z.enum(["monthly", "yearly"]);
+
 export const campaignSchema = z.object({
   name: trimmed(2, 80),
   message: trimmed(5, 2000),

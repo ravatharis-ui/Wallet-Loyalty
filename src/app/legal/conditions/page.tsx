@@ -1,4 +1,4 @@
-import { PRICE_LABEL, TRIAL_DAYS } from "@/lib/pricing";
+import { PRICE_LABEL, PRICE_YEARLY_LABEL, TRIAL_DAYS } from "@/lib/pricing";
 
 export const metadata = { title: "Conditions d'utilisation" };
 
@@ -29,11 +29,23 @@ export default function TermsPage() {
 
       <h2>4. Abonnement</h2>
       <p>
-        L&apos;abonnement est de {PRICE_LABEL} TTC par mois et par commerce, précédé de {TRIAL_DAYS}{" "}
-        jours d&apos;essai gratuit. Il est sans engagement et résiliable à tout moment depuis le
-        portail de facturation. Aucun remboursement au prorata n&apos;est effectué pour le mois en
-        cours. En cas de défaut de paiement, l&apos;accès aux fonctionnalités payantes (envoi
-        d&apos;emails et campagnes) est suspendu.
+        Deux formules sont proposées, par commerce, toutes deux précédées de {TRIAL_DAYS} jours
+        d&apos;essai gratuit : un abonnement <strong>mensuel</strong> de {PRICE_LABEL} TTC par mois,
+        ou un abonnement <strong>annuel</strong> de {PRICE_YEARLY_LABEL} TTC par an, payé en une
+        seule fois à la souscription.
+      </p>
+      <p>
+        La formule mensuelle est sans engagement et résiliable à tout moment depuis le portail de
+        facturation. La formule annuelle couvre douze mois : elle peut être résiliée à tout moment
+        pour empêcher son renouvellement, mais la période déjà réglée n&apos;est pas remboursée.
+        Dans les deux cas, aucun remboursement au prorata n&apos;est effectué pour la période en
+        cours.
+      </p>
+      <p>
+        En cas de défaut de paiement, l&apos;accès aux fonctionnalités payantes (envoi d&apos;emails
+        et campagnes) est suspendu immédiatement. L&apos;enregistrement des visites reste possible
+        pendant sept jours, puis est suspendu à son tour ; les données sont conservées et
+        redeviennent accessibles dès la régularisation.
       </p>
 
       <h2>5. Clients finaux</h2>

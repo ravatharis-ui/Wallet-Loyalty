@@ -1,6 +1,7 @@
 import { requireMerchant } from "@/lib/auth";
 import { appUrl } from "@/lib/env";
-import { PRICE_LABEL, TRIAL_DAYS } from "@/lib/pricing";
+import { PRICE_LABEL, PRICE_YEARLY_LABEL, TRIAL_DAYS } from "@/lib/pricing";
+import { yearlyPlanAvailable } from "@/lib/stripe";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Alert } from "@/components/ui/alert";
@@ -72,7 +73,9 @@ export default async function SettingsPage({
         <Card className="space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
-              <p className="font-medium">Fidelia — {PRICE_LABEL} / mois</p>
+              <p className="font-medium">
+                Fidelia — {PRICE_LABEL} / mois ou {PRICE_YEARLY_LABEL} / an
+              </p>
               <p className="text-sm text-muted-foreground">
                 {session.subscription?.current_period_end
                   ? `Prochaine échéance : ${formatDate(session.subscription.current_period_end)}`
@@ -81,7 +84,10 @@ export default async function SettingsPage({
             </div>
             <Badge variant={status.variant}>{status.label}</Badge>
           </div>
-          <SubscriptionActions hasCustomer={Boolean(session.subscription?.stripe_customer_id)} />
+          <SubscriptionActions
+            hasCustomer={Boolean(session.subscription?.stripe_customer_id)}
+            yearlyAvailable={yearlyPlanAvailable()}
+          />
         </Card>
       </section>
 
