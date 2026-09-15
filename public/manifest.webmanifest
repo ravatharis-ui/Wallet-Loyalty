@@ -1,0 +1,17 @@
+{
+  "name": "Fidelia — carte de fidélité",
+  "short_name": "Fidelia",
+  "description": "Votre carte de fidélité digitale",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#111827",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
