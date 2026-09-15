@@ -137,6 +137,9 @@ SUPABASE_SERVICE_ROLE_KEY=... pnpm test:e2e
 - **Trois automatisations**, pas une de plus : relance à 30 jours, relance à
   60 jours, notification de récompense. Aucune relance n'est envoyée deux fois
   pour la même période d'inactivité, et le compteur repart dès que le client revient.
+- **Essai gratuit** : à l'inscription, le commerce reçoit 14 jours d'essai
+  (`status = 'trialing'`) sans carte bancaire. Stripe n'est pas nécessaire pour
+  démarrer ; dès le premier webhook, c'est Stripe qui devient la source de vérité.
 - **Accès payant** : l'envoi d'emails (relances et campagnes) est réservé aux
   commerces dont l'abonnement Stripe est `active` ou `trialing`. Le scan et
   l'enregistrement des visites restent accessibles pour ne jamais bloquer le

@@ -156,6 +156,19 @@ export function hasActiveSubscription(
   return true;
 }
 
+/** Durée d'essai accordée à la création d'un commerce, en jours. */
+export const DEFAULT_TRIAL_DAYS = 14;
+
+/**
+ * Fin de la période d'essai offerte à l'inscription.
+ * Stripe reprend la main dès le premier webhook : cette valeur est un point de
+ * départ, pas la source de vérité.
+ */
+export function trialPeriodEnd(days: number = DEFAULT_TRIAL_DAYS, now: Date = new Date()): string {
+  const safeDays = Number.isFinite(days) && days > 0 ? Math.trunc(days) : DEFAULT_TRIAL_DAYS;
+  return new Date(now.getTime() + safeDays * 86_400_000).toISOString();
+}
+
 /** Transforme un nom de commerce en slug d'URL. */
 export function slugify(input: string): string {
   return input
