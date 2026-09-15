@@ -97,9 +97,13 @@ RLS active sur les 9 tables.
       live, et les 4 variables à remplacer. Rien du mode test n'est réutilisable.
 - [ ] **Domaine d'envoi Resend** : le bac à sable `onboarding@resend.dev`
       n'envoie qu'à l'adresse du compte. Vérifier un domaine avant de démarcher.
-- [ ] **Compléter `src/lib/legal.ts`** : raison sociale, forme juridique, SIRET,
-      adresse, email de contact. Les champs vides s'affichent en surbrillance sur
-      /legal/mentions-legales — obligatoire avant toute commercialisation.
+- [x] ~~Mentions légales~~ : HERA 1 renseignée dans `src/lib/legal.ts`.
+      Reste facultatif : téléphone, et le médiateur de la consommation une fois
+      l'adhésion faite. Remplacer l'email Gmail par une adresse du domaine une
+      fois celui-ci acheté.
+- [ ] **TVA** : les CGU annoncent « TTC ». À confirmer avec le comptable
+      (TVA 8,5 % à La Réunion, régime du preneur pour les clients métropole),
+      puis ajuster le libellé dans `src/lib/pricing.ts`.
 - [ ] **Contrat de sous-traitance (DPA)** avec chaque commerçant (RGPD art. 28).
 - [ ] **Nom de domaine** : `fidelia.fr` plutôt que `*.vercel.app` pour la vente.
 - [ ] **Suites d'intégration et E2E** : écrites mais jamais exécutées contre une
