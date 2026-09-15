@@ -135,3 +135,44 @@ describe("notification de récompense", () => {
     expect(shouldNotifyReward({ email: null, sentMessages: [] }, daysAgo(0))).toBe(false);
   });
 });
+
+describe("rattrapage après un échec d'envoi", () => {
+  /**
+   * Un envoi qui a échoué (Resend non configuré, domaine non vérifié, panne)
+   * ne doit pas être comptabilisé comme une relance faite. L'appelant ne
+   * transmet donc que les messages au statut « sent » — ces tests décrivent le
+   * comportement attendu une fois ce filtrage appliqué.
+   */
+  it("renvoie la relance si la précédente tentative a échoué", () => {
+    expect(
+      shouldSendInactivityReminder(
+        {
+          lastVisitAt: daysAgo(35),
+          email: "client@example.com",
+          // Aucune relance réussie : l'échec n'apparaît pas dans la liste.
+          sentMessages: [],
+        },
+        "inactive_30_days",
+        now,
+      ),
+    ).toBe(true);
+  });
+
+  it("renotifie une récompense dont la notification avait échoué", () => {
+    expect(shouldNotifyReward({ email: "client@example.com", sentMessages: [] }, daysAgo(3))).toBe(
+      true,
+    );
+  });
+
+  it("ne renvoie rien tant qu'un envoi a réussi", () => {
+    expect(
+      shouldNotifyReward(
+        {
+          email: "client@example.com",
+          sentMessages: [{ type: "reward_available", created_at: daysAgo(2) }],
+        },
+        daysAgo(3),
+      ),
+    ).toBe(false);
+  });
+});

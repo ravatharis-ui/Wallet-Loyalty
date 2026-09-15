@@ -33,11 +33,14 @@ export async function notifyRewardAvailable(params: {
   // Les envois d'emails font partie de l'offre payante.
   if (!hasActiveSubscription(subscription ?? null)) return;
 
+  // Seuls les envois réussis empêchent un renvoi : un échec (Resend non
+  // configuré, domaine non vérifié, panne) doit pouvoir être rattrapé.
   const { data: sentMessages } = await admin
     .from("messages")
     .select("type, created_at")
     .eq("customer_id", customer.id)
     .eq("type", "reward_available")
+    .eq("status", "sent")
     .order("created_at", { ascending: false })
     .limit(5)
     .returns<Pick<Message, "type" | "created_at">[]>();

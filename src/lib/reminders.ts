@@ -75,11 +75,14 @@ export async function runInactivityReminders(now: Date = new Date()): Promise<Re
       continue;
     }
 
+    // Seuls les envois réussis comptent comme relance déjà faite : un échec
+    // technique ne doit pas priver définitivement le client de sa relance.
     const { data: sentMessages } = await admin
       .from("messages")
       .select("type, created_at")
       .eq("customer_id", customer.id)
       .in("type", ["inactive_30_days", "inactive_60_days"])
+      .eq("status", "sent")
       .order("created_at", { ascending: false })
       .limit(10)
       .returns<Pick<Message, "type" | "created_at">[]>();

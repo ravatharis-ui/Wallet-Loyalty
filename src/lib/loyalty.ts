@@ -89,7 +89,11 @@ export function isInactive(
 export interface ReminderCandidate {
   lastVisitAt: string | null;
   email: string | null;
-  /** Messages déjà envoyés à ce client (type + date). */
+  /**
+   * Messages **effectivement envoyés** à ce client (type + date).
+   * Les messages en échec ne doivent pas figurer ici : sinon une panne d'envoi
+   * priverait définitivement le client de sa relance.
+   */
   sentMessages: { type: MessageType; created_at: string }[];
 }
 
