@@ -119,9 +119,14 @@ RLS active sur les 9 tables.
       plus simple qu'un secret à gérer). Sauvegardes quotidiennes automatiques.
       Un workflow GitHub Actions de secours existe, non planifié, lançable à la
       main après création du secret `SUPABASE_DB_URL` (voir README).
-- [ ] **Lancer les suites d'intégration et E2E** contre un projet Supabase de
-      test (isolation RLS entre commerces, atomicité de `add_visit`, parcours
-      Playwright). Écrites, jamais exécutées. Commandes dans le README.
+- [x] ~~Vérifier l'isolation entre commerces~~ — fait **manuellement** : deux
+      commerces créés, cinq tentatives d'accès croisé (liste clients, fiche par
+      URL directe, recherche par téléphone, scan du QR d'un client d'un autre
+      commerce, récompenses et campagnes) toutes refusées comme attendu.
+- [ ] **Suites d'intégration et E2E automatisées** — écrites, jamais exécutées
+      faute d'un projet Supabase de test. Non bloquant avec un seul commerce.
+      À lancer avant d'en installer plusieurs, ou après toute modification
+      touchant les permissions. Commandes dans le README.
 - [ ] **Nettoyer les données de test** avant d'installer un vrai commerce.
 
 ### 🟡 À clarifier
