@@ -58,7 +58,10 @@ export async function notifyRewardAvailable(params: {
     rewardName: params.rewardName,
   });
 
-  const result = await sendEmail(customer.email, rendered);
+  const result = await sendEmail(customer.email, rendered, {
+    fromName: business.name,
+    replyTo: business.email,
+  });
 
   await admin.from("messages").insert({
     business_id: params.businessId,

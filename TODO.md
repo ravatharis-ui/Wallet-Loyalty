@@ -97,8 +97,10 @@ RLS active sur les 9 tables.
       live, et les 4 variables à remplacer. Rien du mode test n'est réutilisable.
 - [ ] **Domaine d'envoi Resend** : le bac à sable `onboarding@resend.dev`
       n'envoie qu'à l'adresse du compte. Vérifier un domaine avant de démarcher.
-- [ ] **Harmoniser le prix** : Stripe est à 49,90 €, l'application affiche 49 €
-      en dur (landing, réglages, conditions d'utilisation).
+- [ ] **Compléter `src/lib/legal.ts`** : raison sociale, forme juridique, SIRET,
+      adresse, email de contact. Les champs vides s'affichent en surbrillance sur
+      /legal/mentions-legales — obligatoire avant toute commercialisation.
+- [ ] **Contrat de sous-traitance (DPA)** avec chaque commerçant (RGPD art. 28).
 - [ ] **Nom de domaine** : `fidelia.fr` plutôt que `*.vercel.app` pour la vente.
 - [ ] **Suites d'intégration et E2E** : écrites mais jamais exécutées contre une
       base réelle. À lancer sur un projet Supabase de test.

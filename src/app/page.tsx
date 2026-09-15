@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { QrCode, Smartphone, Zap, MailCheck, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { PRICE_LABEL, TRIAL_DAYS } from "@/lib/pricing";
 
 const steps = [
   {
@@ -57,7 +58,7 @@ export default function HomePage() {
             </Button>
           </div>
           <p className="mt-4 text-sm text-muted-foreground">
-            14 jours gratuits · Sans engagement · Fonctionne avec votre caisse actuelle
+            {TRIAL_DAYS} jours gratuits · Sans engagement · Fonctionne avec votre caisse actuelle
           </p>
         </section>
 
@@ -85,10 +86,11 @@ export default function HomePage() {
           <h2 className="text-2xl font-bold">Un prix simple</h2>
           <div className="mt-8 max-w-md rounded-2xl border border-border p-6 shadow-sm">
             <p className="text-4xl font-bold">
-              49 € <span className="text-base font-normal text-muted-foreground">/ mois</span>
+              {PRICE_LABEL}{" "}
+              <span className="text-base font-normal text-muted-foreground">/ mois</span>
             </p>
             <p className="mt-1 text-sm text-muted-foreground">
-              14 jours gratuits, sans engagement.
+              {TRIAL_DAYS} jours gratuits, sans engagement.
             </p>
             <ul className="mt-6 space-y-2 text-sm">
               {[
@@ -116,6 +118,9 @@ export default function HomePage() {
         <div className="mx-auto flex max-w-5xl flex-col gap-2 px-5 py-8 text-sm text-muted-foreground sm:flex-row sm:justify-between">
           <span>© {new Date().getFullYear()} Fidelia</span>
           <nav className="flex gap-4">
+            <Link href="/legal/mentions-legales" className="underline">
+              Mentions légales
+            </Link>
             <Link href="/legal/conditions" className="underline">
               Conditions d&apos;utilisation
             </Link>

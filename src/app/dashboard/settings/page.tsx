@@ -1,5 +1,6 @@
 import { requireMerchant } from "@/lib/auth";
 import { appUrl } from "@/lib/env";
+import { PRICE_LABEL, TRIAL_DAYS } from "@/lib/pricing";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Alert } from "@/components/ui/alert";
@@ -71,11 +72,11 @@ export default async function SettingsPage({
         <Card className="space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
-              <p className="font-medium">Fidelia — 49 € / mois</p>
+              <p className="font-medium">Fidelia — {PRICE_LABEL} / mois</p>
               <p className="text-sm text-muted-foreground">
                 {session.subscription?.current_period_end
                   ? `Prochaine échéance : ${formatDate(session.subscription.current_period_end)}`
-                  : "14 jours d'essai gratuit, sans engagement."}
+                  : `${TRIAL_DAYS} jours d'essai gratuit, sans engagement.`}
               </p>
             </div>
             <Badge variant={status.variant}>{status.label}</Badge>

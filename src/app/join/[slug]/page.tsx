@@ -48,6 +48,10 @@ export default async function JoinPage({ params }: { params: Promise<{ slug: str
         <Link href="/legal/conditions" className="underline">
           Conditions d&apos;utilisation
         </Link>
+        {" · "}
+        <Link href="/legal/mentions-legales" className="underline">
+          Mentions légales
+        </Link>
       </p>
     </main>
   );

@@ -1,3 +1,5 @@
+import { PRICE_LABEL, TRIAL_DAYS } from "@/lib/pricing";
+
 export const metadata = { title: "Conditions d'utilisation" };
 
 export default function TermsPage() {
@@ -27,11 +29,11 @@ export default function TermsPage() {
 
       <h2>4. Abonnement</h2>
       <p>
-        L&apos;abonnement est de 49 € TTC par mois et par commerce, précédé de 14 jours d&apos;essai
-        gratuit. Il est sans engagement et résiliable à tout moment depuis le portail de
-        facturation. Aucun remboursement au prorata n&apos;est effectué pour le mois en cours. En
-        cas de défaut de paiement, l&apos;accès aux fonctionnalités payantes (envoi d&apos;emails et
-        campagnes) est suspendu.
+        L&apos;abonnement est de {PRICE_LABEL} TTC par mois et par commerce, précédé de {TRIAL_DAYS}{" "}
+        jours d&apos;essai gratuit. Il est sans engagement et résiliable à tout moment depuis le
+        portail de facturation. Aucun remboursement au prorata n&apos;est effectué pour le mois en
+        cours. En cas de défaut de paiement, l&apos;accès aux fonctionnalités payantes (envoi
+        d&apos;emails et campagnes) est suspendu.
       </p>
 
       <h2>5. Clients finaux</h2>

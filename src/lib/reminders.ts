@@ -113,7 +113,10 @@ export async function runInactivityReminders(now: Date = new Date()): Promise<Re
     };
     const rendered = type === "inactive_60_days" ? inactive60Email(ctx) : inactive30Email(ctx);
 
-    const result = await sendEmail(customer.email, rendered);
+    const result = await sendEmail(customer.email, rendered, {
+      fromName: business.name,
+      replyTo: business.email,
+    });
 
     await admin.from("messages").insert({
       business_id: customer.business_id,

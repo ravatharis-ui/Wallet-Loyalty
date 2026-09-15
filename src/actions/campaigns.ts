@@ -75,7 +75,10 @@ export async function sendCampaignAction(
       message,
     });
 
-    const result = await sendEmail(customer.email, rendered);
+    const result = await sendEmail(customer.email, rendered, {
+      fromName: session.business.name,
+      replyTo: session.business.email,
+    });
     if (result.ok) sent += 1;
 
     await admin.from("messages").insert({

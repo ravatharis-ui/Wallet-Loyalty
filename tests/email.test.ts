@@ -5,6 +5,7 @@ import {
   rewardAvailableEmail,
   campaignEmail,
 } from "@/lib/email/templates";
+import { buildFrom } from "@/lib/email/send";
 
 const ctx = {
   businessName: "Café des Amis",
@@ -43,5 +44,42 @@ describe("templates email", () => {
     const email = campaignEmail({ ...ctx, message: "Ligne 1\n\nLigne 2" });
     expect(email.html).toContain("Ligne 1");
     expect(email.html).toContain("Ligne 2");
+  });
+});
+
+describe("expéditeur des emails", () => {
+  const from = "Fidelia <fidelite@fidelia.fr>";
+
+  it("affiche le nom du commerce, sur notre adresse vérifiée", () => {
+    expect(buildFrom(from, "Café des Amis")).toBe("Café des Amis <fidelite@fidelia.fr>");
+  });
+
+  it("accepte un EMAIL_FROM réduit à une adresse", () => {
+    expect(buildFrom("fidelite@fidelia.fr", "Café des Amis")).toBe(
+      "Café des Amis <fidelite@fidelia.fr>",
+    );
+  });
+
+  it("conserve l'expéditeur par défaut sans nom de commerce", () => {
+    expect(buildFrom(from, null)).toBe(from);
+    expect(buildFrom(from, "   ")).toBe(from);
+  });
+
+  it("neutralise une tentative d'injection d'en-tête", () => {
+    // Un commerçant contrôle le nom de son commerce : il ne doit jamais
+    // pouvoir ajouter un en-tête (Bcc) ni casser le format de l'adresse.
+    const injected = buildFrom(from, 'Café"\r\nBcc: victime@exemple.fr');
+    expect(injected).not.toContain("\n");
+    expect(injected).not.toContain("\r");
+    expect(injected).toBe("Café Bcc: victime@exemple.fr <fidelite@fidelia.fr>");
+  });
+
+  it("tronque un nom de commerce anormalement long", () => {
+    const result = buildFrom(from, "A".repeat(200));
+    expect(result.length).toBeLessThan(100);
+  });
+
+  it("ignore un EMAIL_FROM sans adresse valide", () => {
+    expect(buildFrom("pas-une-adresse", "Café des Amis")).toBe("pas-une-adresse");
   });
 });
