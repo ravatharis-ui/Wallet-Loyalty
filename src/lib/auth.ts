@@ -2,7 +2,7 @@ import "server-only";
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { Business, Profile, Subscription } from "@/lib/db.types";
-import { hasActiveSubscription } from "@/lib/loyalty";
+import { hasActiveSubscription, subscriptionAccess, type SubscriptionAccess } from "@/lib/loyalty";
 
 export interface MerchantSession {
   userId: string;
@@ -11,7 +11,10 @@ export interface MerchantSession {
   business: Business;
   profile: Profile;
   subscription: Subscription | null;
+  /** Accès aux fonctionnalités payantes (emails, campagnes). */
   subscriptionActive: boolean;
+  /** Accès à l'enregistrement des visites, avec période de grâce. */
+  access: SubscriptionAccess;
 }
 
 /**
@@ -54,6 +57,7 @@ export async function requireMerchant(): Promise<MerchantSession> {
     profile,
     subscription: subscription ?? null,
     subscriptionActive: hasActiveSubscription(subscription ?? null),
+    access: subscriptionAccess(subscription ?? null),
   };
 }
 

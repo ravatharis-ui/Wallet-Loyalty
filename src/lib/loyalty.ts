@@ -156,6 +156,50 @@ export function hasActiveSubscription(
   return true;
 }
 
+/**
+ * Délai de tolérance après la fin d'un abonnement (essai expiré, impayé,
+ * résiliation) avant que l'ajout de visite soit refusé.
+ *
+ * Objectif : ne jamais couper le comptoir du jour au lendemain. Pendant ce
+ * délai tout continue de fonctionner, avec un avertissement de plus en plus
+ * insistant. Passé ce délai, la consultation reste possible : aucune donnée
+ * n'est perdue, réactiver l'abonnement suffit à tout relancer.
+ */
+export const SUBSCRIPTION_GRACE_DAYS = 7;
+
+export type AccessLevel = "active" | "grace" | "blocked";
+
+export interface SubscriptionAccess {
+  level: AccessLevel;
+  /** Jours restants avant le blocage, uniquement en période de grâce. */
+  graceDaysLeft: number | null;
+}
+
+export function subscriptionAccess(
+  subscription: { status: SubscriptionStatus; current_period_end: string | null } | null,
+  now: Date = new Date(),
+): SubscriptionAccess {
+  if (hasActiveSubscription(subscription, now)) {
+    return { level: "active", graceDaysLeft: null };
+  }
+
+  const end = subscription?.current_period_end
+    ? new Date(subscription.current_period_end).getTime()
+    : null;
+
+  if (end !== null && !Number.isNaN(end)) {
+    const graceEnd = end + SUBSCRIPTION_GRACE_DAYS * 86_400_000;
+    if (now.getTime() < graceEnd) {
+      return {
+        level: "grace",
+        graceDaysLeft: Math.max(1, Math.ceil((graceEnd - now.getTime()) / 86_400_000)),
+      };
+    }
+  }
+
+  return { level: "blocked", graceDaysLeft: null };
+}
+
 /** Durée d'essai accordée à la création d'un commerce, en jours. */
 export const DEFAULT_TRIAL_DAYS = 14;
 

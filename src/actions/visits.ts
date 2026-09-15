@@ -122,6 +122,13 @@ export interface AddVisitState {
 export async function addVisitAction(customerId: string): Promise<AddVisitState> {
   const session = await requireMerchant();
 
+  if (session.access.level === "blocked") {
+    return {
+      error:
+        "Votre abonnement a expiré. Réactivez-le dans Réglages pour enregistrer de nouvelles visites — vos clients et leurs points sont conservés.",
+    };
+  }
+
   const parsed = uuidSchema.safeParse(customerId);
   if (!parsed.success) return { error: "Client invalide." };
 

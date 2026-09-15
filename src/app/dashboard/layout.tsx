@@ -22,15 +22,38 @@ export default async function DashboardLayout({ children }: { children: React.Re
         </div>
       </header>
 
-      {!session.subscriptionActive ? (
-        <div className="border-b border-amber-200 bg-amber-50">
-          <div className="mx-auto flex max-w-5xl flex-col gap-2 px-5 py-3 text-sm text-amber-900 sm:flex-row sm:items-center sm:justify-between">
+      {session.access.level !== "active" ? (
+        <div
+          className={
+            session.access.level === "blocked"
+              ? "border-b border-red-200 bg-red-50"
+              : "border-b border-amber-200 bg-amber-50"
+          }
+        >
+          <div
+            className={`mx-auto flex max-w-5xl flex-col gap-2 px-5 py-3 text-sm sm:flex-row sm:items-center sm:justify-between ${
+              session.access.level === "blocked" ? "text-red-900" : "text-amber-900"
+            }`}
+          >
             <span>
-              Votre abonnement n&apos;est pas actif. Les envois d&apos;emails et les campagnes sont
-              suspendus.
+              {session.access.level === "blocked" ? (
+                <>
+                  Abonnement expiré. L&apos;enregistrement des visites est suspendu. Vos clients et
+                  leurs points sont conservés : réactivez pour tout relancer.
+                </>
+              ) : (
+                <>
+                  Votre abonnement a expiré. Il vous reste{" "}
+                  <strong>
+                    {session.access.graceDaysLeft} jour
+                    {(session.access.graceDaysLeft ?? 0) > 1 ? "s" : ""}
+                  </strong>{" "}
+                  pour le réactiver avant que l&apos;enregistrement des visites soit suspendu.
+                </>
+              )}
             </span>
             <Button asChild size="sm" variant="accent">
-              <Link href="/dashboard/settings#abonnement">Activer l&apos;abonnement</Link>
+              <Link href="/dashboard/settings#abonnement">Réactiver l&apos;abonnement</Link>
             </Button>
           </div>
         </div>

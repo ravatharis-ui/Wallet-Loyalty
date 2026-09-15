@@ -149,9 +149,13 @@ SUPABASE_SERVICE_ROLE_KEY=... pnpm test:e2e
   (`status = 'trialing'`) sans carte bancaire. Stripe n'est pas nécessaire pour
   démarrer ; dès le premier webhook, c'est Stripe qui devient la source de vérité.
 - **Accès payant** : l'envoi d'emails (relances et campagnes) est réservé aux
-  commerces dont l'abonnement Stripe est `active` ou `trialing`. Le scan et
-  l'enregistrement des visites restent accessibles pour ne jamais bloquer le
-  comptoir ; l'application affiche un bandeau d'invitation à régulariser.
+  commerces dont l'abonnement Stripe est `active` ou `trialing`.
+- **Période de grâce** : à l'expiration (essai terminé, impayé, résiliation),
+  l'enregistrement des visites continue pendant 7 jours avec un bandeau
+  d'avertissement, puis est refusé. La consultation des clients, des cartes et de
+  l'historique reste possible, et rien n'est supprimé : réactiver l'abonnement
+  suffit à tout relancer. Objectif : ne jamais couper le comptoir du jour au
+  lendemain devant un client qui attend.
 
 ## Sécurité
 

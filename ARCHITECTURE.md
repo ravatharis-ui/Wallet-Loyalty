@@ -92,6 +92,15 @@ Un utilisateur = un commerce au MVP, mais la table permet d'en ajouter d'autres 
    `subscriptions`; l'application lit cette table. Aucune vérification d'accès n'est
    faite côté navigateur. `hasActiveSubscription()` accepte `trialing` et `active`.
 
+   Deux niveaux d'accès, tous deux vérifiés côté serveur :
+   - **Fonctionnalités payantes** (relances, notifications, campagnes) : coupées dès
+     que l'abonnement n'est plus `active`/`trialing`.
+   - **Enregistrement des visites** : `subscriptionAccess()` accorde
+     `SUBSCRIPTION_GRACE_DAYS` (7 jours) après la fin de période avant de refuser
+     l'ajout de visite. Une carte expirée ne doit jamais bloquer le comptoir le jour
+     même. Passé ce délai, la consultation reste possible et aucune donnée n'est
+     supprimée : réactiver l'abonnement relance tout.
+
 5. **Anti-doublon de relance.** Avant d'envoyer `inactive_30_days` /
    `inactive_60_days` / `reward_available`, le cron vérifie qu'aucun message du même
    type n'existe pour ce client depuis sa dernière visite. La table `messages` est
