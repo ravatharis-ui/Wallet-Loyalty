@@ -1,5 +1,12 @@
 import { defineConfig, devices } from "@playwright/test";
 
+// Les suites d'integration / E2E lisent les cles Supabase depuis .env.local.
+try {
+  process.loadEnvFile(".env.local");
+} catch {
+  // Absent : les suites concernees s'ignorent d'elles-memes.
+}
+
 const PORT = Number(process.env.PORT ?? 3000);
 const baseURL = process.env.E2E_BASE_URL ?? `http://127.0.0.1:${PORT}`;
 
