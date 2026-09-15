@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import { useSearchParams } from "next/navigation";
-import { loginAction, type ActionState } from "@/actions/auth";
+import { loginAction, logoutAction, type ActionState } from "@/actions/auth";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert } from "@/components/ui/alert";
@@ -10,7 +10,29 @@ import { SubmitButton } from "@/components/submit-button";
 
 export function LoginForm() {
   const [state, formAction] = useActionState<ActionState, FormData>(loginAction, {});
-  const next = useSearchParams().get("next") ?? "/dashboard";
+  const searchParams = useSearchParams();
+  const next = searchParams.get("next") ?? "/dashboard";
+  const sessionError = searchParams.get("error");
+
+  // Session orpheline : l'utilisateur existe encore, mais son commerce a été
+  // supprimé. Se reconnecter n'y changerait rien, il faut clore la session.
+  if (sessionError) {
+    return (
+      <div className="mt-6 space-y-4">
+        <Alert variant="error">
+          {sessionError === "commerce-introuvable"
+            ? "Le commerce associé à ce compte n'existe plus."
+            : "Aucun commerce n'est associé à ce compte."}{" "}
+          Déconnectez-vous, puis créez un nouveau compte.
+        </Alert>
+        <form action={logoutAction}>
+          <SubmitButton className="w-full" size="lg" pendingText="Déconnexion…">
+            Se déconnecter
+          </SubmitButton>
+        </form>
+      </div>
+    );
+  }
 
   return (
     <form action={formAction} className="mt-6 space-y-4">

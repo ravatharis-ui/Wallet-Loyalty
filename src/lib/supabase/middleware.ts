@@ -35,7 +35,12 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  if (user && (pathname === "/login" || pathname === "/signup")) {
+  // Une session valide sans profil (commerce supprimé, données réinitialisées)
+  // arrive ici avec ?error=… : la renvoyer vers /dashboard créerait une boucle,
+  // puisque /dashboard la renverrait aussitôt vers /login.
+  const hasSessionError = request.nextUrl.searchParams.has("error");
+
+  if (user && !hasSessionError && (pathname === "/login" || pathname === "/signup")) {
     const url = request.nextUrl.clone();
     url.pathname = "/dashboard";
     url.search = "";
