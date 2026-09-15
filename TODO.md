@@ -98,9 +98,12 @@ RLS active sur les 9 tables.
       vous facturez, pas avant.
 - [x] ~~Structure juridique~~ : HERA 1, EURL immatriculée au RCS de Saint-Denis.
 - [x] ~~Mentions légales~~ : renseignées dans `src/lib/legal.ts`.
-- [ ] **Stripe en mode live** : activer le compte (SIRET + IBAN), puis recréer
-      produit, **les deux tarifs** (49,90 €/mois et 480 €/an) et webhook en live,
-      et remplacer les 5 variables Vercel. Rien du mode test n'est réutilisable.
+- [x] ~~Stripe en mode live~~ : compte activé, produit et les deux tarifs
+      récurrents (49,90 €/mois, 480 €/an), webhook et 5 variables en place.
+      Paiement réel validé.
+      À confirmer si ce n'est pas déjà fait : portail client activé **en live**
+      (réglage distinct du mode test) et nom public « FIDELIA » sur le relevé
+      bancaire.
 - [ ] **Nom de domaine (~7 €/an) + vérification Resend** — décision : reporté au
       jour de la signature du premier client, pour limiter les frais.
       ⚠️ Tant qu'il n'est pas en place, **aucune relance ne part vers de vrais
