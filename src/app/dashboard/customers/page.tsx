@@ -35,35 +35,27 @@ export default async function CustomersPage({
   const { filter = "all", q = "", deleted } = await searchParams;
   const supabase = await createSupabaseServerClient();
 
-  let query = supabase
-    .from("customers")
-    .select("id, first_name, phone, current_points, total_visits, last_visit_at, rewards!inner(id)")
-    .eq("business_id", session.businessId)
-    .order("last_visit_at", { ascending: false, nullsFirst: false })
-    .limit(200);
-
   // "Récompense disponible" nécessite une jointure filtrante, les autres non.
-  if (filter === "reward") {
-    query = supabase
-      .from("customers")
-      .select(
-        "id, first_name, phone, current_points, total_visits, last_visit_at, rewards!inner(id)",
-      )
-      .eq("business_id", session.businessId)
-      .eq("rewards.status", "available")
-      .order("last_visit_at", { ascending: false, nullsFirst: false })
-      .limit(200);
-  } else {
-    query = supabase
-      .from("customers")
-      .select("id, first_name, phone, current_points, total_visits, last_visit_at, rewards(id)")
-      .eq("business_id", session.businessId)
-      .order("last_visit_at", { ascending: false, nullsFirst: false })
-      .limit(200);
+  let query =
+    filter === "reward"
+      ? supabase
+          .from("customers")
+          .select(
+            "id, first_name, phone, current_points, total_visits, last_visit_at, rewards!inner(id)",
+          )
+          .eq("business_id", session.businessId)
+          .eq("rewards.status", "available")
+          .order("last_visit_at", { ascending: false, nullsFirst: false })
+          .limit(200)
+      : supabase
+          .from("customers")
+          .select("id, first_name, phone, current_points, total_visits, last_visit_at, rewards(id)")
+          .eq("business_id", session.businessId)
+          .order("last_visit_at", { ascending: false, nullsFirst: false })
+          .limit(200);
 
-    if (filter === "inactive") {
-      query = query.not("last_visit_at", "is", null).lt("last_visit_at", inactivityCutoff());
-    }
+  if (filter === "inactive") {
+    query = query.not("last_visit_at", "is", null).lt("last_visit_at", inactivityCutoff());
   }
 
   const term = q

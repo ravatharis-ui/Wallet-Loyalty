@@ -3,8 +3,7 @@ import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { appUrl } from "@/lib/env";
 import { sendEmail } from "@/lib/email/send";
 import { rewardAvailableEmail } from "@/lib/email/templates";
-import { shouldNotifyReward } from "@/lib/loyalty";
-import { hasActiveSubscription } from "@/lib/loyalty";
+import { hasActiveSubscription, shouldNotifyReward } from "@/lib/loyalty";
 import type { Business, Customer, Message, Subscription } from "@/lib/db.types";
 
 /**
