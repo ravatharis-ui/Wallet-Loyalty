@@ -8,19 +8,19 @@
  */
 export const LEGAL_ENTITY = {
   /** Raison sociale, ou nom et prénom pour une entreprise individuelle. */
-  name: "",
+  name: "HERA 1",
   /** Forme juridique : « SASU », « micro-entreprise »… */
-  form: "",
+  form: "EURL (entreprise unipersonnelle à responsabilité limitée)",
   /** Capital social, uniquement pour une société. */
-  capital: "",
+  capital: "1,00 €",
   /** Adresse du siège social. */
   address: "",
   /** Numéro SIRET (14 chiffres). */
-  siret: "",
+  siret: "944 024 389 00016",
   /** N° TVA intracommunautaire, si assujetti. */
-  vatNumber: "",
+  vatNumber: "FR69944024389",
   /** Ville d'immatriculation au RCS, pour une société. */
-  rcs: "",
+  rcs: "944 024 389 R.C.S. Saint-Denis-de-la-Réunion",
   /** Directeur de la publication (souvent le dirigeant). */
   publisher: "",
   /** Email de contact publié. */
