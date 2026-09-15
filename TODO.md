@@ -77,25 +77,34 @@ Statut : `[ ]` à faire · `[x]` terminé
 
 ---
 
-## État — MVP déployé et validé en production
+## État — MVP complet et en production
 
 Déployé sur Vercel (`wallet-loyalty-phi.vercel.app`), base Supabase migrée avec
 RLS active sur les 9 tables.
 
-**Parcours vérifié manuellement de bout en bout** : inscription commerçant →
-programme de fidélité → QR d'inscription → inscription client → carte digitale
-avec QR personnel → scan par le commerçant → ajout d'une visite.
+**Vérifié manuellement en production :**
+
+- Parcours complet : inscription commerçant → programme → QR d'inscription →
+  inscription client → carte digitale → scan → ajout de visite
+- Stripe en mode test : Checkout, abonnement, portail client, webhook (200 sur
+  tous les événements), statut d'abonnement remonté dans l'application
+- Resend (domaine bac à sable) : relance d'inactivité reçue, cron protégé par
+  `CRON_SECRET`
 
 ### Reste à faire
 
-- [ ] **Resend** : brancher la clé API et vérifier le domaine d'envoi. Sans cela
-      les relances 30/60 jours et la notification de récompense sont créées en
-      base avec le statut `failed` au lieu d'être envoyées.
-- [ ] **Stripe** : produit 49 €/mois, webhook de production. En attendant, chaque
-      commerce démarre avec 14 jours d'essai accordés localement.
+- [ ] **Stripe en mode live** : produit, tarif, clé et webhook sont à recréer en
+      live, et les 4 variables à remplacer. Rien du mode test n'est réutilisable.
+- [ ] **Domaine d'envoi Resend** : le bac à sable `onboarding@resend.dev`
+      n'envoie qu'à l'adresse du compte. Vérifier un domaine avant de démarcher.
+- [ ] **Harmoniser le prix** : Stripe est à 49,90 €, l'application affiche 49 €
+      en dur (landing, réglages, conditions d'utilisation).
+- [ ] **Nom de domaine** : `fidelia.fr` plutôt que `*.vercel.app` pour la vente.
 - [ ] **Suites d'intégration et E2E** : écrites mais jamais exécutées contre une
-      base réelle (isolation RLS entre commerces, atomicité de `add_visit`,
-      parcours Playwright). À lancer sur un projet Supabase de test.
+      base réelle. À lancer sur un projet Supabase de test.
 - [ ] **Sauvegardes Supabase** : absentes sur le plan Free. À régler avant
       d'héberger les données de vrais clients.
+- [ ] Canal SMS : l'architecture est prête (`messages.channel` accepte `'sms'`).
+      Le téléphone est obligatoire à l'inscription, l'email non — meilleure
+      couverture. À faire après le premier client payant.
 - [ ] Sentry / PostHog : volontairement hors MVP (voir ARCHITECTURE.md).
