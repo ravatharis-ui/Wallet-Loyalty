@@ -1,0 +1,71 @@
+# Sauvegarde hebdomadaire de la base Supabase.
+#
+# Le plan Supabase Free n'offre aucune sauvegarde automatique : perdre les
+# cartes de fidélité d'un commerce serait irrattrapable. Ce workflow réalise un
+# pg_dump du schéma `public` et le conserve dans les artefacts GitHub.
+#
+# Prérequis : le secret SUPABASE_DB_URL (Settings → Secrets and variables →
+# Actions). Voir la section « Sauvegardes » du README.
+
+name: Sauvegarde base de données
+
+on:
+  schedule:
+    # Tous les dimanches à 03h00 UTC.
+    - cron: "0 3 * * 0"
+  workflow_dispatch:
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Vérifier la configuration
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          if [ -z "$SUPABASE_DB_URL" ]; then
+            echo "::error::Secret SUPABASE_DB_URL absent. Voir la section Sauvegardes du README."
+            exit 1
+          fi
+
+      - name: Exporter la base
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          set -euo pipefail
+          # pg_dump via Docker : version figée, aucune dépendance à installer.
+          # --no-owner / --no-privileges rendent le dump restaurable sur un
+          # autre projet Supabase, dont les rôles diffèrent.
+          docker run --rm -i postgres:17-alpine \
+            pg_dump "$SUPABASE_DB_URL" \
+              --schema=public \
+              --no-owner \
+              --no-privileges \
+            | gzip -9 > backup.sql.gz
+
+      - name: Contrôler le résultat
+        run: |
+          set -euo pipefail
+          size=$(stat -c%s backup.sql.gz)
+          echo "Taille de la sauvegarde : $size octets"
+          # Un dump vide ou tronqué ne doit pas passer pour une sauvegarde valide.
+          if [ "$size" -lt 1024 ]; then
+            echo "::error::Sauvegarde anormalement petite ($size octets) — export probablement échoué."
+            exit 1
+          fi
+          {
+            echo "### Sauvegarde réussie"
+            echo ""
+            echo "- Taille : $(numfmt --to=iec "$size")"
+            echo "- Tables : $(zcat backup.sql.gz | grep -c '^CREATE TABLE' || true)"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Conserver l'archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: supabase-backup-${{ github.run_id }}
+          path: backup.sql.gz
+          retention-days: 90
+          if-no-files-found: error

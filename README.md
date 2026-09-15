@@ -117,6 +117,45 @@ SUPABASE_SERVICE_ROLE_KEY=... pnpm test:e2e
 
 ---
 
+## Sauvegardes
+
+Le plan Supabase Free n'inclut aucune sauvegarde automatique. Le workflow
+`.github/workflows/backup.yml` réalise un `pg_dump` hebdomadaire du schéma
+`public`, compressé et conservé 90 jours dans les artefacts GitHub. Gratuit,
+y compris sur un dépôt privé.
+
+### Mise en place
+
+1. Supabase → **Project Settings → Database → Connection string** → onglet
+   **Session pooler** (et non « Direct connection » : les runners GitHub sont en
+   IPv4, la connexion directe ne l'est pas). Copier l'URI et y remplacer
+   `[YOUR-PASSWORD]` par le mot de passe de la base.
+2. GitHub → dépôt → **Settings → Secrets and variables → Actions → New
+   repository secret** :
+   - Nom : `SUPABASE_DB_URL`
+   - Valeur : l'URI complète
+3. Onglet **Actions** → « Sauvegarde base de données » → **Run workflow** pour
+   vérifier immédiatement, sans attendre dimanche.
+
+L'archive se télécharge depuis la page du run, section **Artifacts**.
+
+### Restauration
+
+```bash
+gunzip -c backup.sql.gz | psql "$SUPABASE_DB_URL"
+```
+
+### Limite à connaître
+
+Le dump couvre le schéma `public` : commerces, clients, visites, récompenses,
+messages, campagnes, abonnements — c'est-à-dire tout ce qui est irremplaçable.
+Il **ne contient pas** le schéma `auth` de Supabase, inaccessible en lecture sur
+le plan Free. Après une restauration, les comptes commerçants seraient à
+recréer, puis à relier à leur commerce en renseignant `profiles.business_id`.
+Les données de fidélité, elles, sont intégralement préservées.
+
+---
+
 ## Déploiement (Vercel)
 
 1. Importer le dépôt sur Vercel.

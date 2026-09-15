@@ -115,8 +115,11 @@ RLS active sur les 9 tables.
 
 ### 🟠 Avant de confier de vraies données
 
-- [ ] **Sauvegardes** — absentes sur Supabase Free. Plutôt que les 25 $/mois du
-      plan Pro : `pg_dump` hebdomadaire via GitHub Actions, gratuit. À monter.
+- [x] ~~Sauvegardes~~ — workflow `pg_dump` hebdomadaire via GitHub Actions
+      (gratuit, remplace les 25 $/mois du plan Supabase Pro).
+      **Reste à faire de votre côté** : créer le secret `SUPABASE_DB_URL` dans
+      GitHub, puis lancer le workflow une fois à la main pour vérifier.
+      Voir la section « Sauvegardes » du README.
 - [ ] **Lancer les suites d'intégration et E2E** contre un projet Supabase de
       test (isolation RLS entre commerces, atomicité de `add_visit`, parcours
       Playwright). Écrites, jamais exécutées. Commandes dans le README.
