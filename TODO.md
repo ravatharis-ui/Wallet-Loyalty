@@ -91,26 +91,50 @@ RLS active sur les 9 tables.
 - Resend (domaine bac à sable) : relance d'inactivité reçue, cron protégé par
   `CRON_SECRET`
 
-### Reste à faire
+### 🔴 Bloquant — avant d'encaisser le premier euro
 
-- [ ] **Stripe en mode live** : produit, tarif, clé et webhook sont à recréer en
-      live, et les 4 variables à remplacer. Rien du mode test n'est réutilisable.
-- [ ] **Domaine d'envoi Resend** : le bac à sable `onboarding@resend.dev`
-      n'envoie qu'à l'adresse du compte. Vérifier un domaine avant de démarcher.
-- [x] ~~Mentions légales~~ : HERA 1 renseignée dans `src/lib/legal.ts`.
-      Reste facultatif : téléphone, et le médiateur de la consommation une fois
-      l'adhésion faite. Remplacer l'email Gmail par une adresse du domaine une
-      fois celui-ci acheté.
+- [ ] **Plan Vercel Pro** (~20 $/mois). Le plan Hobby interdit l'usage commercial :
+      c'est une condition contractuelle, pas une limite technique.
+- [x] ~~Structure juridique~~ : HERA 1, EURL immatriculée au RCS de Saint-Denis.
+- [x] ~~Mentions légales~~ : renseignées dans `src/lib/legal.ts`.
+- [ ] **Stripe en mode live** : activer le compte (SIRET + IBAN), puis recréer
+      produit, tarif et webhook en live et remplacer les 4 variables Vercel.
+      Rien du mode test n'est réutilisable.
+- [ ] **Nom de domaine** (~10 €/an) : plus crédible que `*.vercel.app` face à un
+      commerçant, et nécessaire pour l'email.
+- [ ] **Domaine d'envoi vérifié dans Resend** (3 enregistrements DNS). Sans lui,
+      le bac à sable n'écrit qu'à vous : aucun client réel ne reçoit de relance.
+
+### 🟠 Avant de confier de vraies données
+
+- [ ] **Sauvegardes Supabase** (plan Pro, ~25 $/mois). Absentes en Free : perdre
+      les cartes d'un commerce serait irrattrapable commercialement.
+- [ ] **Lancer les suites d'intégration et E2E** contre un projet Supabase de
+      test (isolation RLS entre commerces, atomicité de `add_visit`, parcours
+      Playwright). Écrites, jamais exécutées. Commandes dans le README.
+- [ ] **Nettoyer les données de test** avant d'installer un vrai commerce.
+
+### 🟡 À clarifier
+
 - [ ] **TVA** : les CGU annoncent « TTC ». À confirmer avec le comptable
-      (TVA 8,5 % à La Réunion, régime du preneur pour les clients métropole),
-      puis ajuster le libellé dans `src/lib/pricing.ts`.
-- [ ] **Contrat de sous-traitance (DPA)** avec chaque commerçant (RGPD art. 28).
-- [ ] **Nom de domaine** : `fidelia.fr` plutôt que `*.vercel.app` pour la vente.
-- [ ] **Suites d'intégration et E2E** : écrites mais jamais exécutées contre une
-      base réelle. À lancer sur un projet Supabase de test.
-- [ ] **Sauvegardes Supabase** : absentes sur le plan Free. À régler avant
-      d'héberger les données de vrais clients.
-- [ ] Canal SMS : l'architecture est prête (`messages.channel` accepte `'sms'`).
-      Le téléphone est obligatoire à l'inscription, l'email non — meilleure
-      couverture. À faire après le premier client payant.
+      (8,5 % à La Réunion, régime du preneur pour les clients métropole), puis
+      ajuster le libellé dans `src/lib/pricing.ts`.
+- [ ] **Contrat de sous-traitance (DPA)** à faire signer par chaque commerçant
+      (RGPD art. 28).
+- [ ] Médiateur de la consommation : adhésion puis renseigner `legal.ts`.
+- [ ] Remplacer l'email Gmail des mentions légales par une adresse du domaine.
+
+### 🟢 Après le premier client payant
+
+- [ ] **Canal SMS** : le téléphone est obligatoire à l'inscription, l'email non —
+      100 % de couverture contre une minorité. L'architecture est prête
+      (`messages.channel` accepte déjà `'sms'`). Une demi-journée.
 - [ ] Sentry / PostHog : volontairement hors MVP (voir ARCHITECTURE.md).
+- [ ] WhatsApp : seulement si un commerçant le réclame. Vérification Meta,
+      templates pré-approuvés, facturation à la conversation.
+
+### 💰 Économie
+
+Vercel Pro (~20 $) + Supabase Pro (~25 $) + domaine (~1 €/mois) ≈ **45 €/mois de
+coûts fixes**. Le premier client à 49,90 € met à l'équilibre, le deuxième
+commence à dégager de la marge.
