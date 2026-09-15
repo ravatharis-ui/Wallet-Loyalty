@@ -119,12 +119,18 @@ SUPABASE_SERVICE_ROLE_KEY=... pnpm test:e2e
 
 ## Sauvegardes
 
-Le plan Supabase Free n'inclut aucune sauvegarde automatique. Le workflow
-`.github/workflows/backup.yml` réalise un `pg_dump` hebdomadaire du schéma
-`public`, compressé et conservé 90 jours dans les artefacts GitHub. Gratuit,
-y compris sur un dépôt privé.
+Le plan Supabase Free n'inclut aucune sauvegarde automatique.
 
-### Mise en place
+**Solution retenue** : souscrire au plan **Supabase Pro** au premier client
+payant, qui active les sauvegardes quotidiennes automatiques. Tant qu'il n'y a
+que des données de test, il n'y a rien à protéger.
+
+Le workflow `.github/workflows/backup.yml` reste disponible comme secours :
+`pg_dump` du schéma `public`, compressé et conservé 90 jours dans les artefacts
+GitHub. Il n'est **pas planifié** — on le lance à la main depuis l'onglet
+Actions, par exemple avant une opération risquée sur la base.
+
+### Mise en place (si utilisé)
 
 1. Supabase → **Project Settings → Database → Connection string** → onglet
    **Session pooler** (et non « Direct connection » : les runners GitHub sont en

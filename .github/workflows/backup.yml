@@ -1,8 +1,10 @@
-# Sauvegarde hebdomadaire de la base Supabase.
+# Sauvegarde manuelle de la base Supabase.
 #
-# Le plan Supabase Free n'offre aucune sauvegarde automatique : perdre les
-# cartes de fidélité d'un commerce serait irrattrapable. Ce workflow réalise un
-# pg_dump du schéma `public` et le conserve dans les artefacts GitHub.
+# Solution retenue pour les sauvegardes : le plan Supabase Pro, souscrit au
+# premier client payant. Ce workflow reste disponible comme secours — export
+# ponctuel avant une opération risquée, ou solution gratuite si l'on renonce au
+# plan Pro. Il n'est volontairement pas planifié : il ne se déclenche qu'à la
+# demande, depuis l'onglet Actions.
 #
 # Prérequis : le secret SUPABASE_DB_URL (Settings → Secrets and variables →
 # Actions). Voir la section « Sauvegardes » du README.
@@ -10,9 +12,6 @@
 name: Sauvegarde base de données
 
 on:
-  schedule:
-    # Tous les dimanches à 03h00 UTC.
-    - cron: "0 3 * * 0"
   workflow_dispatch:
 
 jobs:

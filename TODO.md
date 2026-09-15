@@ -115,11 +115,10 @@ RLS active sur les 9 tables.
 
 ### 🟠 Avant de confier de vraies données
 
-- [x] ~~Sauvegardes~~ — workflow `pg_dump` hebdomadaire via GitHub Actions
-      (gratuit, remplace les 25 $/mois du plan Supabase Pro).
-      **Reste à faire de votre côté** : créer le secret `SUPABASE_DB_URL` dans
-      GitHub, puis lancer le workflow une fois à la main pour vérifier.
-      Voir la section « Sauvegardes » du README.
+- [ ] **Sauvegardes — plan Supabase Pro au premier client payant** (décision :
+      plus simple qu'un secret à gérer). Sauvegardes quotidiennes automatiques.
+      Un workflow GitHub Actions de secours existe, non planifié, lançable à la
+      main après création du secret `SUPABASE_DB_URL` (voir README).
 - [ ] **Lancer les suites d'intégration et E2E** contre un projet Supabase de
       test (isolation RLS entre commerces, atomicité de `add_visit`, parcours
       Playwright). Écrites, jamais exécutées. Commandes dans le README.
