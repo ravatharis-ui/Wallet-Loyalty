@@ -35,7 +35,12 @@ function explain(error: unknown): string {
   if (message.includes("similar object exists in live mode") || message.includes("test mode key")) {
     return "Mélange entre le mode test et le mode live : la clé, le tarif et le webhook doivent tous venir du même mode.";
   }
-  return "Stripe a refusé la demande. Vérifiez STRIPE_SECRET_KEY et STRIPE_PRICE_ID, puis réessayez.";
+  if (message.includes("activate") || message.includes("cannot currently make live charges")) {
+    return "Votre compte Stripe n'est pas encore activé pour encaisser des paiements réels. Basculez en mode test (clé sk_test_ + tarif et webhook créés en mode test), ou complétez l'activation de votre compte dans Stripe.";
+  }
+  // Message brut de Stripe : il est descriptif, ne contient aucun secret, et
+  // n'est visible que par le propriétaire du commerce.
+  return `Stripe a refusé la demande : « ${message} »`;
 }
 
 /**
