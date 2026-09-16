@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert } from "@/components/ui/alert";
 import { formatRelativeDays } from "@/lib/utils";
+import { loyalRevenueCents, formatCents, formatCentsPrecise } from "@/lib/revenue";
 
 export const metadata = { title: "Tableau de bord" };
 
@@ -25,6 +26,11 @@ export default async function DashboardPage() {
     getDashboardStats(session.businessId),
     getActiveProgram(session.businessId),
   ]);
+
+  const revenueCents = loyalRevenueCents(
+    stats.visitsThisMonth,
+    session.business.average_basket_cents,
+  );
 
   return (
     <div className="space-y-6">
@@ -60,6 +66,29 @@ export default async function DashboardPage() {
           </Link>
         </Button>
       </div>
+
+      {revenueCents !== null ? (
+        <Card className="bg-primary text-primary-foreground">
+          <p className="text-sm opacity-80">
+            Chiffre d&apos;affaires de vos clients fidèles ce mois
+          </p>
+          <p className="mt-1 text-4xl font-bold">{formatCents(revenueCents)}</p>
+          <p className="mt-1 text-sm opacity-80">
+            {stats.visitsThisMonth} visite{stats.visitsThisMonth > 1 ? "s" : ""} ×{" "}
+            {formatCentsPrecise(session.business.average_basket_cents ?? 0)} de panier moyen
+          </p>
+        </Card>
+      ) : (
+        <Card className="border-dashed">
+          <p className="text-sm text-muted-foreground">
+            Renseignez votre <strong>panier moyen</strong> dans les réglages pour voir, chaque mois,
+            ce que représentent vos clients fidèles en euros.
+          </p>
+          <Button asChild variant="outline" size="sm" className="mt-3">
+            <Link href="/dashboard/settings#commerce">Renseigner mon panier moyen</Link>
+          </Button>
+        </Card>
+      )}
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Stat label="Clients" value={stats.customers} />

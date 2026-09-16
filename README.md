@@ -44,6 +44,7 @@ pnpm dev
    - `20260102000000_card_customisation.sql` — couleur de carte et bucket `logos`
    - `20260103000000_card_delivery.sql` — types de message `welcome` et
      `card_recovery`
+   - `20260104000000_average_basket.sql` — panier moyen du commerce
 3. Dans **Authentication → Providers → Email**, activer Email/Password.
    Pour le MVP, désactiver « Confirm email » afin que l'inscription commerçant
    ouvre directement le dashboard (sinon le commerçant doit confirmer son email
@@ -209,6 +210,14 @@ Les données de fidélité, elles, sont intégralement préservées.
   faire renvoyer depuis `/join/[slug]/retrouver` en saisissant son téléphone.
   Cette page répond toujours la même chose, qu'une carte existe ou non : sinon
   un simple numéro permettrait de savoir qui fréquente le commerce.
+- **Chiffre d'affaires des clients fidèles** : le commerçant renseigne son panier
+  moyen (facultatif), et le tableau de bord affiche `visites du mois × panier
+moyen`. C'est une estimation assumée, pas une mesure du gain incrémental : le
+  libellé et le détail du calcul restent affichés pour que le chiffre soit
+  vérifiable. Rien n'est affiché tant que le panier moyen n'est pas renseigné.
+- **Page de démonstration** (`/demo`) : un commerce fictif avec des données
+  statiques, hors base, pour montrer à un prospect un compte vivant plutôt qu'un
+  tableau de bord vide. Clairement étiquetée comme fictive.
 - **Personnalisation** : le commerçant choisit une couleur et téléverse un logo
   (Réglages). La couleur est validée puis la couleur de texte calculée par
   luminance, pour rester lisible quel que soit le fond. Les logos sont stockés

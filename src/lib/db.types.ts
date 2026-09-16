@@ -32,6 +32,8 @@ export interface Business {
   logo_url: string | null;
   /** Couleur principale de la carte client, au format #rrggbb. */
   card_color: string;
+  /** Panier moyen en centimes, null tant qu'il n'est pas renseigné. */
+  average_basket_cents: number | null;
   phone: string | null;
   email: string | null;
   created_at: string;

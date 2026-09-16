@@ -5,6 +5,7 @@ import { requireMerchant } from "@/lib/auth";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { businessSchema, firstError, LOGO_MAX_BYTES, LOGO_MIME_TYPES } from "@/lib/validation";
+import { basketToCents } from "@/lib/revenue";
 
 export interface BusinessState {
   error?: string;
@@ -22,6 +23,7 @@ export async function saveBusinessAction(
     phone: formData.get("phone") ?? "",
     email: formData.get("email") ?? "",
     cardColor: formData.get("cardColor") ?? "#111827",
+    averageBasket: formData.get("averageBasket") ?? "",
   });
   if (!parsed.success) return { error: firstError(parsed.error) };
 
@@ -34,6 +36,7 @@ export async function saveBusinessAction(
       phone: parsed.data.phone,
       email: parsed.data.email,
       card_color: parsed.data.cardColor,
+      average_basket_cents: basketToCents(parsed.data.averageBasket ?? ""),
     })
     .eq("id", session.businessId);
 

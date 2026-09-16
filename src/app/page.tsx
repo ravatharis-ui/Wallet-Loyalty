@@ -60,7 +60,7 @@ export default function HomePage() {
               <Link href="/signup">Essayer gratuitement</Link>
             </Button>
             <Button asChild size="lg" variant="outline">
-              <Link href="#fonctionnement">Voir comment ça marche</Link>
+              <Link href="/demo">Voir une démonstration</Link>
             </Button>
           </div>
           <p className="mt-4 text-sm text-muted-foreground">
