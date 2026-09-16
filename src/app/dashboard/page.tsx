@@ -49,7 +49,12 @@ export default async function DashboardPage() {
           Aucun programme actif.{" "}
           <Link href="/dashboard/loyalty" className="underline">
             Configurer maintenant
+          </Link>{" "}
+          ou{" "}
+          <Link href="/dashboard/aide" className="underline">
+            lire le guide
           </Link>
+          .
         </Alert>
       ) : null}
 

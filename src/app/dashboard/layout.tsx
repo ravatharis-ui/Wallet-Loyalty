@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { HelpCircle } from "lucide-react";
 import { requireMerchant } from "@/lib/auth";
 import { BottomNav, SideNav } from "@/components/dashboard-nav";
 import { logoutAction } from "@/actions/auth";
@@ -15,11 +16,19 @@ export default async function DashboardLayout({ children }: { children: React.Re
           <Link href="/dashboard" className="font-semibold">
             {session.business.name}
           </Link>
-          <form action={logoutAction}>
-            <Button variant="ghost" size="sm" type="submit">
-              Déconnexion
+          <div className="flex items-center gap-1">
+            <Button asChild variant="ghost" size="sm">
+              <Link href="/dashboard/aide">
+                <HelpCircle className="mr-1.5 h-4 w-4" aria-hidden />
+                Guide
+              </Link>
             </Button>
-          </form>
+            <form action={logoutAction}>
+              <Button variant="ghost" size="sm" type="submit">
+                Déconnexion
+              </Button>
+            </form>
+          </div>
         </div>
       </header>
 
