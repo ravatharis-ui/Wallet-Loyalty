@@ -178,6 +178,10 @@ export function HelpContent({ joinUrl }: { joinUrl: string }) {
             pour qu&apos;un faux compte ne rapporte rien.
           </p>
           <p>
+            Le bloc « Parrainez vos proches » n&apos;apparaît sur la carte de vos clients que si ce
+            bonus est supérieur à zéro. Tant qu&apos;il est à 0, le parrainage est désactivé.
+          </p>
+          <p>
             Deux réglages dans Fidélité limitent les abus : un <strong>achat minimum</strong> du
             filleul (le bonus attend le premier passage qui l&apos;atteint) et un{" "}
             <strong>plafond de parrainages par client sur 30 jours</strong>. Laissez-les à zéro si

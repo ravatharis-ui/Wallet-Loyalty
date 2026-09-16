@@ -26,3 +26,12 @@ export function formatDateTime(date: string | null): string {
     timeStyle: "short",
   }).format(new Date(date));
 }
+
+/** Formate des centimes en euros, sans décimales inutiles : 2000 → « 20 € ». */
+export function formatEuros(cents: number): string {
+  const euros = cents / 100;
+  return `${euros.toLocaleString("fr-FR", {
+    minimumFractionDigits: Number.isInteger(euros) ? 0 : 2,
+    maximumFractionDigits: 2,
+  })} €`;
+}

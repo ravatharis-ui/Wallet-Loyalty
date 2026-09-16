@@ -136,10 +136,8 @@ RLS active sur les 9 tables.
 
 ### ⚙️ À appliquer sur Supabase
 
-- [ ] **Migration `20260106000000_referral_guards.sql`** : achat minimum du
-      filleul et plafond de parrainages par client sur 30 jours, tous deux
-      réglables dans Fidélité. Remplace `add_visit` — à appliquer après
-      `20260105000000`. Sans elle, l'enregistrement des visites échoue.
+- [x] ~~Migration `20260106000000_referral_guards.sql`~~ : garde-fous du
+      parrainage (achat minimum, plafond mensuel), appliquée.
 
 - [x] ~~Migration `20260105000000_referral.sql`~~ : parrainage, appliquée.
 

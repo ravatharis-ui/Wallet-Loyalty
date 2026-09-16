@@ -9,6 +9,7 @@ import { ReferralShare } from "@/components/referral-share";
 import { appUrl } from "@/lib/env";
 import { formatDate } from "@/lib/utils";
 import { readableTextColor, safeCardColor } from "@/lib/colors";
+import { formatEuros } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -154,7 +155,11 @@ export default async function CardPage({
           <p className="text-sm font-medium">Parrainez vos proches</p>
           <p className="mt-1 text-sm text-muted-foreground">
             Ils gagnent {program.referral_points} points d&apos;avance, et vous aussi dès leur
-            première visite.
+            passage en boutique
+            {program.mode === "amount" && program.referral_min_amount_cents > 0
+              ? ` avec un achat d'au moins ${formatEuros(program.referral_min_amount_cents)}`
+              : ""}
+            .
           </p>
           <ReferralShare
             url={`${appUrl()}/join/${business.slug}?p=${customer.referral_code}`}
