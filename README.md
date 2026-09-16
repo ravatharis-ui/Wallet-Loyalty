@@ -212,6 +212,16 @@ Les données de fidélité, elles, sont intégralement préservées.
   `FREE_TIER_CUSTOMER_LIMIT` (3) cartes clients. La limite est vérifiée côté
   serveur à l'inscription publique ; un client déjà inscrit retrouve toujours sa
   carte. L'essai gratuit de 14 jours démarre à la souscription, côté Stripe.
+- **Import d'un fichier existant** : le commerçant reprend son carnet ou son
+  tableur en CSV (prénom et téléphone obligatoires, email/visites/points
+  facultatifs). Le séparateur est détecté, les colonnes reconnues quelle que soit
+  leur orthographe, et chaque ligne fautive est signalée avec son numéro plutôt
+  que corrigée en silence. Les clients déjà enregistrés sont ignorés — leurs
+  points actuels font foi, pas ceux d'un export daté. **Aucun email n'est envoyé**
+  à l'import : écrire à des centaines de personnes qui n'ont rien demandé ce
+  jour-là abîmerait la réputation d'envoi du domaine, celle qui fait arriver les
+  relances. Le palier gratuit s'applique aussi, sinon un fichier suffirait à
+  contourner la limite de trois cartes.
 - **Parrainage** : chaque client dispose d'un `referral_code` court, **distinct du
   `card_token`** — partager sa carte reviendrait à donner ses points. Le lien
   `/join/[slug]?p=<code>` rattache le filleul à son parrain, résolu côté serveur

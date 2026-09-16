@@ -3,6 +3,7 @@ import { requireMerchant } from "@/lib/auth";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { inactivityCutoff } from "@/lib/stats";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert } from "@/components/ui/alert";
 import { formatRelativeDays, cn } from "@/lib/utils";
@@ -70,11 +71,16 @@ export default async function CustomersPage({
 
   return (
     <div className="space-y-5">
-      <header>
-        <h1 className="text-2xl font-bold">Clients</h1>
-        <p className="text-sm text-muted-foreground">
-          {customers?.length ?? 0} client(s) affiché(s)
-        </p>
+      <header className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold">Clients</h1>
+          <p className="text-sm text-muted-foreground">
+            {customers?.length ?? 0} client(s) affiché(s)
+          </p>
+        </div>
+        <Button asChild variant="outline" size="sm">
+          <Link href="/dashboard/customers/import">Importer un fichier</Link>
+        </Button>
       </header>
 
       {deleted ? <Alert variant="success">Client supprimé.</Alert> : null}
