@@ -2,11 +2,11 @@ import Link from "next/link";
 import { Gift, ScanLine } from "lucide-react";
 import { DEMO_BUSINESS, DEMO_STATS, DEMO_VISITS, DEMO_INACTIVE, DEMO_CARD } from "@/lib/demo-data";
 import { VisitsChart } from "@/components/visits-chart";
+import { growthPercent } from "@/lib/visits-history";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { readableTextColor } from "@/lib/colors";
-import { loyalRevenueCents, formatCents, formatCentsPrecise } from "@/lib/revenue";
 import { PRICE_LABEL, TRIAL_DAYS } from "@/lib/pricing";
 
 export const metadata = {
@@ -26,7 +26,7 @@ function Stat({ label, value }: { label: string; value: number }) {
 export default function DemoPage() {
   const color = DEMO_BUSINESS.color;
   const textOnColor = readableTextColor(color);
-  const revenue = loyalRevenueCents(DEMO_STATS.visitsThisMonth, DEMO_BUSINESS.averageBasketCents)!;
+  const growth = growthPercent(DEMO_VISITS);
 
   return (
     <div className="min-h-dvh">
@@ -53,13 +53,10 @@ export default function DemoPage() {
         </div>
 
         <Card style={{ background: color, color: textOnColor }}>
-          <p className="text-sm opacity-80">
-            Chiffre d&apos;affaires de vos clients fidèles ce mois
-          </p>
-          <p className="mt-1 text-4xl font-bold">{formatCents(revenue)}</p>
+          <p className="text-sm opacity-80">Vos clients sont revenus</p>
+          <p className="mt-1 text-4xl font-bold">{DEMO_STATS.visitsThisMonth} fois ce mois</p>
           <p className="mt-1 text-sm opacity-80">
-            {DEMO_STATS.visitsThisMonth} visites ×{" "}
-            {formatCentsPrecise(DEMO_BUSINESS.averageBasketCents)} de panier moyen
+            soit {growth} % de plus qu&apos;en {DEMO_VISITS[0].label}
           </p>
         </Card>
 

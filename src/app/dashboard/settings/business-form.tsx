@@ -44,23 +44,6 @@ export function BusinessForm({ business }: { business: Business }) {
         </div>
 
         <div>
-          <Label htmlFor="averageBasket">Panier moyen (facultatif)</Label>
-          <Input
-            id="averageBasket"
-            name="averageBasket"
-            inputMode="decimal"
-            placeholder="28"
-            defaultValue={
-              business.average_basket_cents ? String(business.average_basket_cents / 100) : ""
-            }
-          />
-          <p className="mt-1 text-xs text-muted-foreground">
-            Ce que dépense un client en moyenne, en euros. Sert à chiffrer sur votre tableau de bord
-            ce que représentent vos clients fidèles. Laissez vide pour ne rien afficher.
-          </p>
-        </div>
-
-        <div>
           <Label>Couleur de la carte</Label>
           <input type="hidden" name="cardColor" value={color} />
           <div className="flex flex-wrap items-center gap-2">

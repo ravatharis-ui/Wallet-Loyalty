@@ -7,8 +7,8 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert } from "@/components/ui/alert";
 import { formatRelativeDays } from "@/lib/utils";
-import { loyalRevenueCents, formatCents, formatCentsPrecise } from "@/lib/revenue";
 import { VisitsChart } from "@/components/visits-chart";
+import { growthPercent } from "@/lib/visits-history";
 import { safeCardColor, readableTextColor } from "@/lib/colors";
 
 export const metadata = { title: "Tableau de bord" };
@@ -29,11 +29,8 @@ export default async function DashboardPage() {
     getActiveProgram(session.businessId),
   ]);
 
-  const revenueCents = loyalRevenueCents(
-    stats.visitsThisMonth,
-    session.business.average_basket_cents,
-  );
   const color = safeCardColor(session.business.card_color);
+  const growth = growthPercent(stats.visitsByMonth);
 
   return (
     <div className="space-y-6">
@@ -70,16 +67,15 @@ export default async function DashboardPage() {
         </Button>
       </div>
 
-      {revenueCents !== null ? (
+      {stats.visitsThisMonth > 0 ? (
         <Card style={{ background: color, color: readableTextColor(color) }}>
-          <p className="text-sm opacity-80">
-            Chiffre d&apos;affaires de vos clients fidèles ce mois
-          </p>
-          <p className="mt-1 text-4xl font-bold">{formatCents(revenueCents)}</p>
-          <p className="mt-1 text-sm opacity-80">
-            {stats.visitsThisMonth} visite{stats.visitsThisMonth > 1 ? "s" : ""} ×{" "}
-            {formatCentsPrecise(session.business.average_basket_cents ?? 0)} de panier moyen
-          </p>
+          <p className="text-sm opacity-80">Vos clients sont revenus</p>
+          <p className="mt-1 text-4xl font-bold">{stats.visitsThisMonth} fois ce mois</p>
+          {growth !== null && growth > 0 ? (
+            <p className="mt-1 text-sm opacity-80">
+              soit {growth} % de plus qu&apos;en {stats.visitsByMonth[0].label}
+            </p>
+          ) : null}
         </Card>
       ) : null}
 
@@ -122,15 +118,6 @@ export default async function DashboardPage() {
           <Button asChild variant="outline" className="w-full">
             <Link href="/dashboard/customers?filter=inactive">Voir les clients</Link>
           </Button>
-          {revenueCents === null ? (
-            <p className="text-xs text-muted-foreground">
-              Vous pouvez renseigner votre panier moyen dans les{" "}
-              <Link href="/dashboard/settings#commerce" className="underline">
-                réglages
-              </Link>{" "}
-              pour chiffrer ce que représentent vos clients fidèles.
-            </p>
-          ) : null}
         </div>
       </div>
     </div>

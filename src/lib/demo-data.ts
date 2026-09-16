@@ -14,7 +14,6 @@ export const DEMO_BUSINESS = {
     threshold: 8,
     rewardName: "1 accessoire offert",
   },
-  averageBasketCents: 2800,
 } as const;
 
 export const DEMO_STATS = {

@@ -56,3 +56,16 @@ export function bucketVisitsByMonth(
 
   return buckets;
 }
+
+/**
+ * Progression entre le premier et le dernier mois de l'historique, en
+ * pourcentage. Retourne `null` quand la comparaison n'aurait pas de sens :
+ * mois de départ à zéro, ou historique trop court.
+ */
+export function growthPercent(points: VisitsPoint[]): number | null {
+  if (points.length < 2) return null;
+  const first = points[0].visits;
+  const last = points[points.length - 1].visits;
+  if (first <= 0) return null;
+  return Math.round(((last - first) / first) * 100);
+}

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { bucketVisitsByMonth, historyStart } from "@/lib/visits-history";
+import { bucketVisitsByMonth, historyStart, growthPercent } from "@/lib/visits-history";
 
 const now = new Date("2026-09-16T12:00:00Z");
 
@@ -57,5 +57,27 @@ describe("libellés des mois", () => {
       "Sept",
     ]);
     expect(points[5].label).toBe("septembre");
+  });
+});
+
+describe("progression sur six mois", () => {
+  const point = (month: string, visits: number) => ({ month, label: month, visits });
+
+  it("compare le dernier mois au premier", () => {
+    expect(growthPercent([point("Avr", 62), point("Sept", 138)])).toBe(123);
+  });
+
+  it("gère une baisse", () => {
+    expect(growthPercent([point("Avr", 100), point("Sept", 60)])).toBe(-40);
+  });
+
+  it("ne compare rien depuis zéro", () => {
+    // Un commerce qui démarre à zéro n'a pas fait « +∞ % ».
+    expect(growthPercent([point("Avr", 0), point("Sept", 40)])).toBeNull();
+  });
+
+  it("ne compare rien sur un historique trop court", () => {
+    expect(growthPercent([])).toBeNull();
+    expect(growthPercent([point("Sept", 40)])).toBeNull();
   });
 });

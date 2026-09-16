@@ -44,7 +44,6 @@ pnpm dev
    - `20260102000000_card_customisation.sql` — couleur de carte et bucket `logos`
    - `20260103000000_card_delivery.sql` — types de message `welcome` et
      `card_recovery`
-   - `20260104000000_average_basket.sql` — panier moyen du commerce
 3. Dans **Authentication → Providers → Email**, activer Email/Password.
    Pour le MVP, désactiver « Confirm email » afin que l'inscription commerçant
    ouvre directement le dashboard (sinon le commerçant doit confirmer son email

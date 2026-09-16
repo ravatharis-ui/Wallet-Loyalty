@@ -59,7 +59,6 @@ export const businessSchema = z.object({
     .trim()
     .regex(/^#[0-9a-fA-F]{6}$/, "Couleur invalide")
     .transform((value) => value.toLowerCase()),
-  averageBasket: z.string().trim().optional(),
 });
 
 /** Logo du commerce : formats bitmap courants, 1 Mo maximum. */
