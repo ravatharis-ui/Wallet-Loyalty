@@ -32,6 +32,12 @@ export function LoyaltyForm({ program }: { program: LoyaltyProgram | null }) {
   const [perEuro, setPerEuro] = useState(program?.points_per_euro ?? 1);
   const [rewardName, setRewardName] = useState(program?.reward_name ?? "1 café offert");
   const [referralPoints, setReferralPoints] = useState(program?.referral_points ?? 0);
+  const [referralMinAmount, setReferralMinAmount] = useState(
+    program?.referral_min_amount_cents ? String(program.referral_min_amount_cents / 100) : "",
+  );
+  const [referralMonthlyLimit, setReferralMonthlyLimit] = useState(
+    program?.referral_monthly_limit ?? 0,
+  );
 
   return (
     <form action={formAction} className="space-y-5">
@@ -164,6 +170,55 @@ export function LoyaltyForm({ program }: { program: LoyaltyProgram | null }) {
           </p>
         </div>
 
+        {referralPoints > 0 ? (
+          <div className="grid gap-4 rounded-xl border border-border p-4 sm:grid-cols-2">
+            <p className="text-sm font-medium sm:col-span-2">
+              Conditions du parrainage
+              <span className="ml-2 font-normal text-muted-foreground">pour éviter les abus</span>
+            </p>
+
+            {mode === "amount" ? (
+              <div>
+                <Label htmlFor="referralMinAmount">Achat minimum du filleul</Label>
+                <Input
+                  id="referralMinAmount"
+                  name="referralMinAmount"
+                  inputMode="decimal"
+                  placeholder="20"
+                  value={referralMinAmount}
+                  onChange={(event) => setReferralMinAmount(event.target.value)}
+                />
+                <p className="mt-1 text-xs text-muted-foreground">
+                  En euros. En dessous, le bonus attend : il sera versé au premier passage du
+                  filleul qui atteint ce montant. Laissez vide pour n&apos;imposer aucun montant.
+                </p>
+              </div>
+            ) : (
+              <div className="text-sm text-muted-foreground">
+                L&apos;achat minimum n&apos;est disponible qu&apos;en mode « points selon le montant
+                » : en mode tampon, le montant n&apos;est pas saisi.
+              </div>
+            )}
+
+            <div>
+              <Label htmlFor="referralMonthlyLimit">Parrainages par client et par mois</Label>
+              <Input
+                id="referralMonthlyLimit"
+                name="referralMonthlyLimit"
+                type="number"
+                min={0}
+                max={1000}
+                value={referralMonthlyLimit}
+                onChange={(event) => setReferralMonthlyLimit(Number(event.target.value))}
+              />
+              <p className="mt-1 text-xs text-muted-foreground">
+                Sur 30 jours glissants. Au-delà, le filleul s&apos;inscrit normalement mais le bonus
+                n&apos;est plus versé. 0 = illimité.
+              </p>
+            </div>
+          </div>
+        ) : null}
+
         <label className="flex items-center gap-3 text-sm">
           <input
             type="checkbox"
@@ -196,7 +251,14 @@ export function LoyaltyForm({ program }: { program: LoyaltyProgram | null }) {
         ) : null}
         {referralPoints > 0 ? (
           <p className="mt-2 text-sm text-muted-foreground">
-            Parrainage : {referralPoints} points pour le parrain et pour le filleul.
+            Parrainage : {referralPoints} points pour le parrain et pour le filleul
+            {mode === "amount" && referralMinAmount
+              ? `, à partir de ${referralMinAmount} € d'achat`
+              : ""}
+            {referralMonthlyLimit > 0
+              ? `, dans la limite de ${referralMonthlyLimit} par mois et par client`
+              : ""}
+            .
           </p>
         ) : null}
       </Card>

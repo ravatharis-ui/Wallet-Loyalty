@@ -71,6 +71,17 @@ export const loyaltyProgramSchema = z.object({
   pointsPerVisit: z.coerce.number().int().min(1).max(100),
   pointsPerEuro: z.coerce.number().int().min(1).max(100).default(1),
   referralPoints: z.coerce.number().int().min(0).max(10000).default(0),
+  referralMinAmount: z
+    .string()
+    .trim()
+    .optional()
+    .transform((value) => {
+      if (!value) return 0;
+      const amount = Number(value.replace(",", "."));
+      if (!Number.isFinite(amount) || amount <= 0) return 0;
+      return Math.round(Math.min(1_000_000, amount) * 100);
+    }),
+  referralMonthlyLimit: z.coerce.number().int().min(0).max(1000).default(0),
   rewardThreshold: z.coerce.number().int().min(1).max(1000),
   rewardName: trimmed(2, 80),
   rewardDescription: z

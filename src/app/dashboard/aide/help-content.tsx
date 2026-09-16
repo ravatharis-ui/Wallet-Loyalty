@@ -174,8 +174,14 @@ export function HelpContent({ joinUrl }: { joinUrl: string }) {
           <p>
             Si vous réglez un <strong>bonus de parrainage</strong> dans votre programme, chaque
             client peut partager son lien. Le bonus est versé au parrain et au filleul{" "}
-            <strong>à la première visite du filleul en boutique</strong> — jamais à la simple
-            inscription, pour qu&apos;un faux compte ne rapporte rien.
+            <strong>quand le filleul passe en boutique</strong> — jamais à la simple inscription,
+            pour qu&apos;un faux compte ne rapporte rien.
+          </p>
+          <p>
+            Deux réglages dans Fidélité limitent les abus : un <strong>achat minimum</strong> du
+            filleul (le bonus attend le premier passage qui l&apos;atteint) et un{" "}
+            <strong>plafond de parrainages par client sur 30 jours</strong>. Laissez-les à zéro si
+            vous préférez ne rien imposer.
           </p>
         </Section>
 

@@ -197,6 +197,22 @@ export function ScanClient() {
                   🎉 Nouvelle récompense disponible
                 </p>
               ) : null}
+              {visit.result.referralRewarded ? (
+                <p className="mt-2 text-sm font-medium text-green-700">
+                  🤝 Parrainage validé — le parrain a reçu son bonus
+                </p>
+              ) : null}
+              {visit.result.referralNote === "min_amount" ? (
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Bonus de parrainage en attente : achat sous le minimum fixé. Il sera versé au
+                  prochain passage qui l&apos;atteint.
+                </p>
+              ) : null}
+              {visit.result.referralNote === "monthly_limit" ? (
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Bonus de parrainage non versé : le parrain a atteint sa limite mensuelle.
+                </p>
+              ) : null}
             </div>
           ) : null}
 

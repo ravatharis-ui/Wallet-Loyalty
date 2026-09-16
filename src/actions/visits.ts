@@ -118,6 +118,8 @@ export interface AddVisitState {
     rewardThreshold: number;
     pointsAdded: number;
     rewardsCreated: number;
+    referralRewarded: boolean;
+    referralNote: "min_amount" | "monthly_limit" | null;
   };
 }
 
@@ -210,6 +212,8 @@ export async function addVisitAction(customerId: string, amount?: string): Promi
       rewardThreshold: result.reward_threshold,
       pointsAdded: result.points_added,
       rewardsCreated: result.rewards_created,
+      referralRewarded: result.referral_rewarded,
+      referralNote: result.referral_note,
     },
   };
 }

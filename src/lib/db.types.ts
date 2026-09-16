@@ -58,6 +58,10 @@ export interface LoyaltyProgram {
   points_per_euro: number;
   /** Points offerts au parrain et au filleul. Zéro désactive le parrainage. */
   referral_points: number;
+  /** Achat minimum du filleul pour valider le parrainage. Zéro = aucune condition. */
+  referral_min_amount_cents: number;
+  /** Parrainages récompensés par client sur 30 jours. Zéro = illimité. */
+  referral_monthly_limit: number;
   reward_threshold: number;
   reward_name: string;
   reward_description: string | null;
@@ -77,6 +81,8 @@ export interface Customer {
   referral_code: string;
   /** Client qui a parrainé celui-ci, le cas échéant. */
   referred_by: string | null;
+  /** Date de versement du bonus de parrainage, nulle s'il n'a pas été versé. */
+  referral_rewarded_at: string | null;
   total_visits: number;
   current_points: number;
   last_visit_at: string | null;
@@ -153,4 +159,6 @@ export interface AddVisitResult {
   points_added: number;
   rewards_created: number;
   referral_rewarded: boolean;
+  /** Motif de non-versement : « min_amount », « monthly_limit », ou null. */
+  referral_note: "min_amount" | "monthly_limit" | null;
 }

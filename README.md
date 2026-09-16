@@ -46,6 +46,8 @@ pnpm dev
      `card_recovery`
    - `20260104000000_loyalty_modes.sql` — modes de fidélité et `add_visit` mis à jour
    - `20260105000000_referral.sql` — parrainage, `apply_points` et `add_visit` mis à jour
+   - `20260106000000_referral_guards.sql` — garde-fous du parrainage (achat
+     minimum, plafond mensuel) et `add_visit` mis à jour
 3. Dans **Authentication → Providers → Email**, activer Email/Password.
    Pour le MVP, désactiver « Confirm email » afin que l'inscription commerçant
    ouvre directement le dashboard (sinon le commerçant doit confirmer son email

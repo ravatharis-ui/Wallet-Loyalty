@@ -82,6 +82,57 @@ describe("programme de fidélité", () => {
     }
   });
 
+  it("convertit le montant minimum de parrainage en centimes", () => {
+    const result = loyaltyProgramSchema.safeParse({
+      name: "Ma fidélité",
+      mode: "amount",
+      pointsPerVisit: "1",
+      pointsPerEuro: "1",
+      rewardThreshold: "100",
+      rewardName: "10 € offerts",
+      referralPoints: "50",
+      referralMinAmount: "20,50",
+      referralMonthlyLimit: "3",
+      active: true,
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.referralMinAmount).toBe(2050);
+      expect(result.data.referralMonthlyLimit).toBe(3);
+    }
+  });
+
+  it("traite un montant minimum vide ou invalide comme « pas de minimum »", () => {
+    const base = {
+      name: "Ma fidélité",
+      pointsPerVisit: "1",
+      rewardThreshold: "10",
+      rewardName: "1 café offert",
+      active: true,
+    };
+    for (const value of ["", "   ", "abc", "-5"]) {
+      const result = loyaltyProgramSchema.safeParse({ ...base, referralMinAmount: value });
+      expect(result.success).toBe(true);
+      if (result.success) expect(result.data.referralMinAmount).toBe(0);
+    }
+  });
+
+  it("refuse un plafond mensuel négatif ou déraisonnable", () => {
+    const base = {
+      name: "Ma fidélité",
+      pointsPerVisit: "1",
+      rewardThreshold: "10",
+      rewardName: "1 café offert",
+      active: true,
+    };
+    expect(loyaltyProgramSchema.safeParse({ ...base, referralMonthlyLimit: "-1" }).success).toBe(
+      false,
+    );
+    expect(loyaltyProgramSchema.safeParse({ ...base, referralMonthlyLimit: "5000" }).success).toBe(
+      false,
+    );
+  });
+
   it("refuse un seuil nul ou négatif", () => {
     const base = {
       name: "Ma fidélité",

@@ -404,3 +404,142 @@ run("parrainage", () => {
     expect(sponsorCode).not.toMatch(/^[a-f0-9]{32}$/);
   });
 });
+
+run("garde-fous du parrainage", () => {
+  let admin: SupabaseClient;
+  let businessId: string;
+  let sponsorId: string;
+
+  const MIN_AMOUNT_CENTS = 2000; // 20 €
+  const MONTHLY_LIMIT = 2;
+
+  async function newCustomer(firstName: string, referredBy?: string) {
+    const { data, error } = await admin
+      .from("customers")
+      .insert({
+        business_id: businessId,
+        first_name: firstName,
+        phone: `06${Math.floor(10_000_000 + Math.random() * 89_999_999)}`,
+        referred_by: referredBy ?? null,
+      })
+      .select("id")
+      .single();
+    if (error) throw error;
+    return data!.id as string;
+  }
+
+  async function visit(customerId: string, amountCents: number) {
+    const { data, error } = await admin.rpc("add_visit", {
+      p_customer_id: customerId,
+      p_business_id: businessId,
+      p_dedupe_seconds: 0,
+      p_amount_cents: amountCents,
+    });
+    if (error) throw error;
+    return data as { referral_rewarded: boolean; referral_note: string | null };
+  }
+
+  async function sponsorPoints() {
+    const { data } = await admin
+      .from("customers")
+      .select("current_points")
+      .eq("id", sponsorId)
+      .single();
+    return data!.current_points as number;
+  }
+
+  beforeAll(async () => {
+    admin = createClient(url!, serviceKey!, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
+    const suffix = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+
+    const { data: business } = await admin
+      .from("businesses")
+      .insert({ name: `Garde ${suffix}`, slug: `garde-${suffix}`.slice(0, 50) })
+      .select("id")
+      .single();
+    businessId = business!.id;
+
+    await admin.from("loyalty_programs").insert({
+      business_id: businessId,
+      name: "Test",
+      mode: "amount",
+      points_per_euro: 1,
+      points_per_visit: 1,
+      reward_threshold: 1000,
+      reward_name: "Récompense",
+      referral_points: 5,
+      referral_min_amount_cents: MIN_AMOUNT_CENTS,
+      referral_monthly_limit: MONTHLY_LIMIT,
+      active: true,
+    });
+
+    sponsorId = await newCustomer("Parrain");
+  }, 60_000);
+
+  afterAll(async () => {
+    if (admin && businessId) await admin.from("businesses").delete().eq("id", businessId);
+  });
+
+  it("refuse le bonus quand l'achat du filleul est sous le minimum", async () => {
+    const godchild = await newCustomer("PetitAchat", sponsorId);
+    const before = await sponsorPoints();
+
+    const result = await visit(godchild, MIN_AMOUNT_CENTS - 100);
+
+    expect(result.referral_rewarded).toBe(false);
+    expect(result.referral_note).toBe("min_amount");
+    expect(await sponsorPoints()).toBe(before);
+  }, 30_000);
+
+  it("verse le bonus au premier passage qui atteint le minimum, même après un refus", async () => {
+    // Le bonus n'est pas perdu : un premier petit achat ne brûle pas le parrainage.
+    const godchild = await newCustomer("Retour", sponsorId);
+    const before = await sponsorPoints();
+
+    const refused = await visit(godchild, MIN_AMOUNT_CENTS - 100);
+    expect(refused.referral_rewarded).toBe(false);
+
+    const accepted = await visit(godchild, MIN_AMOUNT_CENTS);
+    expect(accepted.referral_rewarded).toBe(true);
+    expect(accepted.referral_note).toBeNull();
+    expect(await sponsorPoints()).toBe(before + 5);
+
+    // Jamais deux fois pour le même filleul.
+    const third = await visit(godchild, MIN_AMOUNT_CENTS);
+    expect(third.referral_rewarded).toBe(false);
+    expect(await sponsorPoints()).toBe(before + 5);
+  }, 30_000);
+
+  it("bloque le parrain une fois son plafond mensuel atteint", async () => {
+    // Un filleul a déjà été validé par le test précédent : il reste une place.
+    const second = await newCustomer("Filleul2", sponsorId);
+    const accepted = await visit(second, MIN_AMOUNT_CENTS);
+    expect(accepted.referral_rewarded).toBe(true);
+
+    const pointsAtLimit = await sponsorPoints();
+
+    const third = await newCustomer("Filleul3", sponsorId);
+    const blocked = await visit(third, MIN_AMOUNT_CENTS);
+
+    expect(blocked.referral_rewarded).toBe(false);
+    expect(blocked.referral_note).toBe("monthly_limit");
+    expect(await sponsorPoints()).toBe(pointsAtLimit);
+  }, 30_000);
+
+  it("ne compte pas les filleuls validés il y a plus de 30 jours", async () => {
+    await admin
+      .from("customers")
+      .update({ referral_rewarded_at: new Date(Date.now() - 45 * 86_400_000).toISOString() })
+      .eq("referred_by", sponsorId)
+      .not("referral_rewarded_at", "is", null);
+
+    const fresh = await newCustomer("Filleul4", sponsorId);
+    const before = await sponsorPoints();
+    const result = await visit(fresh, MIN_AMOUNT_CENTS);
+
+    expect(result.referral_rewarded).toBe(true);
+    expect(await sponsorPoints()).toBe(before + 5);
+  }, 30_000);
+});
