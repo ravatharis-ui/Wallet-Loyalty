@@ -133,8 +133,8 @@ RLS active sur les 9 tables.
 
 ### ⚙️ À appliquer sur Supabase
 
-- [ ] **Migration `20260102000000_card_customisation.sql`** : couleur de carte et
-      bucket `logos`. Sans elle, les réglages de personnalisation échouent.
+- [x] ~~Migration `20260102000000_card_customisation.sql`~~ : appliquée et
+      vérifiée (colonne `card_color`, bucket `logos` public).
 - [ ] **Authentication → URL Configuration → Redirect URLs** : ajouter
       `https://<domaine>/nouveau-mot-de-passe`, sinon le lien de
       réinitialisation est refusé.
