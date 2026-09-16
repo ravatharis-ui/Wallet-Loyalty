@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { loginSchema, signupSchema, firstError } from "@/lib/validation";
-import { slugify, trialPeriodEnd, DEFAULT_TRIAL_DAYS } from "@/lib/loyalty";
+import { slugify } from "@/lib/loyalty";
 
 export interface ActionState {
   error?: string;
@@ -93,14 +93,9 @@ export async function signupAction(_prev: ActionState, formData: FormData): Prom
       active: true,
     });
 
-    // Essai gratuit ouvert immédiatement, sans carte bancaire. Le webhook
-    // Stripe écrasera ce statut dès que le commerçant s'abonnera.
-    const configuredTrial = Number(process.env.STRIPE_TRIAL_DAYS ?? DEFAULT_TRIAL_DAYS);
-    await admin.from("subscriptions").insert({
-      business_id: business.id,
-      status: "trialing",
-      current_period_end: trialPeriodEnd(configuredTrial),
-    });
+    // Mode découverte : tout fonctionne, plafonné à FREE_TIER_CUSTOMER_LIMIT
+    // cartes. L'essai gratuit démarre à la souscription, côté Stripe.
+    await admin.from("subscriptions").insert({ business_id: business.id, status: "none" });
   }
 
   if (!signUpData.session) {

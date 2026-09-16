@@ -3,7 +3,7 @@ import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { appUrl } from "@/lib/env";
 import { sendEmail } from "@/lib/email/send";
 import { rewardAvailableEmail } from "@/lib/email/templates";
-import { hasActiveSubscription, shouldNotifyReward } from "@/lib/loyalty";
+import { canSendEmails, shouldNotifyReward, subscriptionAccess } from "@/lib/loyalty";
 import type { Business, Customer, Message, Subscription } from "@/lib/db.types";
 
 /**
@@ -30,8 +30,8 @@ export async function notifyRewardAvailable(params: {
 
   if (!customer || !business || customer.business_id !== params.businessId) return;
   if (!customer.email) return;
-  // Les envois d'emails font partie de l'offre payante.
-  if (!hasActiveSubscription(subscription ?? null)) return;
+  // Autorisé en découverte et sur abonnement en cours, coupé après expiration.
+  if (!canSendEmails(subscriptionAccess(subscription ?? null))) return;
 
   // Seuls les envois réussis empêchent un renvoi : un échec (Resend non
   // configuré, domaine non vérifié, panne) doit pouvoir être rattrapé.

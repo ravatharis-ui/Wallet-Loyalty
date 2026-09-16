@@ -9,6 +9,7 @@ import { sendEmail } from "@/lib/email/send";
 import { campaignEmail } from "@/lib/email/templates";
 import { appUrl } from "@/lib/env";
 import type { AudienceType } from "@/lib/db.types";
+import { canSendEmails } from "@/lib/loyalty";
 
 export interface CampaignState {
   error?: string;
@@ -29,8 +30,8 @@ export async function sendCampaignAction(
 ): Promise<CampaignState> {
   const session = await requireMerchant();
 
-  if (!session.subscriptionActive) {
-    return { error: "Abonnement inactif : les campagnes sont suspendues." };
+  if (!canSendEmails(session.access)) {
+    return { error: "Abonnement expiré : les campagnes sont suspendues." };
   }
 
   const parsed = campaignSchema.safeParse({

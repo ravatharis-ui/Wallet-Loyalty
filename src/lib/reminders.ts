@@ -6,8 +6,9 @@ import { inactive30Email, inactive60Email } from "@/lib/email/templates";
 import {
   INACTIVITY_30_DAYS,
   INACTIVITY_MAX_DAYS,
-  hasActiveSubscription,
+  canSendEmails,
   shouldSendInactivityReminder,
+  subscriptionAccess,
 } from "@/lib/loyalty";
 import type { Business, Customer, Message, MessageType, Subscription } from "@/lib/db.types";
 
@@ -70,7 +71,7 @@ export async function runInactivityReminders(now: Date = new Date()): Promise<Re
     const business = businessById.get(customer.business_id);
     const subscription = subscriptionByBusiness.get(customer.business_id) ?? null;
 
-    if (!business || !hasActiveSubscription(subscription, now)) {
+    if (!business || !canSendEmails(subscriptionAccess(subscription, now))) {
       summary.skipped += 1;
       continue;
     }

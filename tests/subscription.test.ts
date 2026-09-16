@@ -1,5 +1,11 @@
 import { describe, it, expect } from "vitest";
-import { hasActiveSubscription, trialPeriodEnd, subscriptionAccess } from "@/lib/loyalty";
+import {
+  hasActiveSubscription,
+  subscriptionAccess,
+  canCreateCustomer,
+  canSendEmails,
+  FREE_TIER_CUSTOMER_LIMIT,
+} from "@/lib/loyalty";
 
 const now = new Date("2026-03-01T12:00:00Z");
 const future = "2026-04-01T12:00:00Z";
@@ -33,39 +39,6 @@ describe("accès conditionné à l'abonnement", () => {
 
   it("accepte un abonnement actif sans date de fin connue", () => {
     expect(hasActiveSubscription({ status: "active", current_period_end: null }, now)).toBe(true);
-  });
-});
-
-describe("essai gratuit à l'inscription", () => {
-  const now = new Date("2026-03-01T12:00:00Z");
-
-  it("ouvre 14 jours par défaut", () => {
-    expect(trialPeriodEnd(undefined, now)).toBe("2026-03-15T12:00:00.000Z");
-  });
-
-  it("respecte une durée configurée", () => {
-    expect(trialPeriodEnd(30, now)).toBe("2026-03-31T12:00:00.000Z");
-  });
-
-  it("retombe sur 14 jours si la configuration est invalide", () => {
-    expect(trialPeriodEnd(Number.NaN, now)).toBe("2026-03-15T12:00:00.000Z");
-    expect(trialPeriodEnd(-5, now)).toBe("2026-03-15T12:00:00.000Z");
-  });
-
-  it("donne bien accès au produit pendant l'essai", () => {
-    expect(
-      hasActiveSubscription(
-        { status: "trialing", current_period_end: trialPeriodEnd(14, now) },
-        now,
-      ),
-    ).toBe(true);
-  });
-
-  it("coupe l'accès une fois l'essai expiré", () => {
-    const expired = trialPeriodEnd(14, new Date("2026-01-01T12:00:00Z"));
-    expect(hasActiveSubscription({ status: "trialing", current_period_end: expired }, now)).toBe(
-      false,
-    );
   });
 });
 
@@ -117,10 +90,10 @@ describe("période de grâce après expiration", () => {
     ).toBe("grace");
   });
 
-  it("bloque un commerce qui n'a jamais eu d'abonnement", () => {
-    expect(subscriptionAccess(null, now).level).toBe("blocked");
+  it("place un commerce jamais abonné en mode découverte", () => {
+    expect(subscriptionAccess(null, now).level).toBe("free");
     expect(subscriptionAccess({ status: "none", current_period_end: null }, now).level).toBe(
-      "blocked",
+      "free",
     );
   });
 
@@ -128,5 +101,52 @@ describe("période de grâce après expiration", () => {
     const expired = { status: "trialing" as const, current_period_end: daysFromNow(-1) };
     expect(subscriptionAccess(expired, now).level).toBe("grace");
     expect(hasActiveSubscription(expired, now)).toBe(false);
+  });
+});
+
+describe("palier gratuit — 3 cartes clients", () => {
+  const now = new Date("2026-03-01T12:00:00Z");
+  const free = subscriptionAccess(null, now);
+  const active = subscriptionAccess(
+    { status: "active", current_period_end: "2026-04-01T12:00:00Z" },
+    now,
+  );
+
+  it("annonce la limite en mode découverte", () => {
+    expect(free.level).toBe("free");
+    expect(free.customerLimit).toBe(FREE_TIER_CUSTOMER_LIMIT);
+  });
+
+  it("laisse créer jusqu'à la limite, puis refuse", () => {
+    expect(canCreateCustomer(free, 0)).toBe(true);
+    expect(canCreateCustomer(free, 2)).toBe(true);
+    expect(canCreateCustomer(free, 3)).toBe(false);
+    expect(canCreateCustomer(free, 10)).toBe(false);
+  });
+
+  it("lève la limite avec un abonnement en cours", () => {
+    expect(active.customerLimit).toBeNull();
+    expect(canCreateCustomer(active, 5_000)).toBe(true);
+  });
+
+  it("refuse toute création une fois la grâce écoulée", () => {
+    const blocked = subscriptionAccess(
+      { status: "canceled", current_period_end: "2026-01-01T12:00:00Z" },
+      now,
+    );
+    expect(blocked.level).toBe("blocked");
+    expect(canCreateCustomer(blocked, 0)).toBe(false);
+  });
+
+  it("autorise les emails en découverte et sur abonnement, pas après expiration", () => {
+    expect(canSendEmails(free)).toBe(true);
+    expect(canSendEmails(active)).toBe(true);
+
+    const grace = subscriptionAccess(
+      { status: "past_due", current_period_end: "2026-02-27T12:00:00Z" },
+      now,
+    );
+    expect(grace.level).toBe("grace");
+    expect(canSendEmails(grace)).toBe(false);
   });
 });

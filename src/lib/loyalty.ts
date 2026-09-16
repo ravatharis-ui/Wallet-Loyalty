@@ -171,12 +171,30 @@ export function hasActiveSubscription(
  */
 export const SUBSCRIPTION_GRACE_DAYS = 7;
 
-export type AccessLevel = "active" | "grace" | "blocked";
+/**
+ * Nombre de cartes clients créables sans abonnement.
+ *
+ * Le commerce découvre le produit en conditions réelles — programme, QR, scan,
+ * récompenses, emails — mais ne peut pas exploiter son fichier client. Pour
+ * passer en illimité, il souscrit, ce qui déclenche l'essai gratuit.
+ */
+export const FREE_TIER_CUSTOMER_LIMIT = 3;
+
+/**
+ * - `active` : abonnement en cours (ou essai Stripe) — tout est illimité.
+ * - `free`   : jamais abonné — tout fonctionne, plafonné à 3 cartes clients.
+ * - `grace`  : abonnement expiré depuis moins de 7 jours — les visites
+ *              continuent, les envois d'emails sont coupés.
+ * - `blocked`: au-delà — consultation seule.
+ */
+export type AccessLevel = "active" | "free" | "grace" | "blocked";
 
 export interface SubscriptionAccess {
   level: AccessLevel;
   /** Jours restants avant le blocage, uniquement en période de grâce. */
   graceDaysLeft: number | null;
+  /** Nombre de cartes créables, `null` si illimité. */
+  customerLimit: number | null;
 }
 
 export function subscriptionAccess(
@@ -184,37 +202,40 @@ export function subscriptionAccess(
   now: Date = new Date(),
 ): SubscriptionAccess {
   if (hasActiveSubscription(subscription, now)) {
-    return { level: "active", graceDaysLeft: null };
+    return { level: "active", graceDaysLeft: null, customerLimit: null };
   }
 
   const end = subscription?.current_period_end
     ? new Date(subscription.current_period_end).getTime()
     : null;
 
-  if (end !== null && !Number.isNaN(end)) {
-    const graceEnd = end + SUBSCRIPTION_GRACE_DAYS * 86_400_000;
-    if (now.getTime() < graceEnd) {
-      return {
-        level: "grace",
-        graceDaysLeft: Math.max(1, Math.ceil((graceEnd - now.getTime()) / 86_400_000)),
-      };
-    }
+  // Aucune période enregistrée : ce commerce n'a jamais souscrit.
+  if (end === null || Number.isNaN(end)) {
+    return { level: "free", graceDaysLeft: null, customerLimit: FREE_TIER_CUSTOMER_LIMIT };
   }
 
-  return { level: "blocked", graceDaysLeft: null };
+  const graceEnd = end + SUBSCRIPTION_GRACE_DAYS * 86_400_000;
+  if (now.getTime() < graceEnd) {
+    return {
+      level: "grace",
+      graceDaysLeft: Math.max(1, Math.ceil((graceEnd - now.getTime()) / 86_400_000)),
+      customerLimit: FREE_TIER_CUSTOMER_LIMIT,
+    };
+  }
+
+  return { level: "blocked", graceDaysLeft: null, customerLimit: FREE_TIER_CUSTOMER_LIMIT };
 }
 
-/** Durée d'essai accordée à la création d'un commerce, en jours. */
-export const DEFAULT_TRIAL_DAYS = 14;
+/** Une nouvelle carte client peut-elle être créée ? */
+export function canCreateCustomer(access: SubscriptionAccess, currentCount: number): boolean {
+  if (access.level === "blocked") return false;
+  if (access.customerLimit === null) return true;
+  return currentCount < access.customerLimit;
+}
 
-/**
- * Fin de la période d'essai offerte à l'inscription.
- * Stripe reprend la main dès le premier webhook : cette valeur est un point de
- * départ, pas la source de vérité.
- */
-export function trialPeriodEnd(days: number = DEFAULT_TRIAL_DAYS, now: Date = new Date()): string {
-  const safeDays = Number.isFinite(days) && days > 0 ? Math.trunc(days) : DEFAULT_TRIAL_DAYS;
-  return new Date(now.getTime() + safeDays * 86_400_000).toISOString();
+/** Les envois d'emails sont réservés au gratuit et à l'abonnement en cours. */
+export function canSendEmails(access: SubscriptionAccess): boolean {
+  return access.level === "active" || access.level === "free";
 }
 
 /** Transforme un nom de commerce en slug d'URL. */

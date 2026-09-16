@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatDateTime } from "@/lib/utils";
 import type { Campaign } from "@/lib/db.types";
+import { canSendEmails } from "@/lib/loyalty";
 import { CampaignForm } from "./campaign-form";
 
 export const metadata = { title: "Campagnes" };
@@ -35,7 +36,7 @@ export default async function CampaignsPage() {
         </p>
       </header>
 
-      <CampaignForm disabled={!session.subscriptionActive} />
+      <CampaignForm disabled={!canSendEmails(session.access)} />
 
       <section className="space-y-3">
         <h2 className="font-semibold">Historique</h2>

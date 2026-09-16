@@ -14,6 +14,7 @@ import { JoinQrActions } from "./join-qr-actions";
 export const metadata = { title: "Réglages" };
 
 const statusLabels: Record<string, { label: string; variant: "success" | "warning" | "danger" }> = {
+  free: { label: "Mode découverte", variant: "warning" },
   active: { label: "Actif", variant: "success" },
   trialing: { label: "Période d'essai", variant: "success" },
   past_due: { label: "Paiement en retard", variant: "warning" },
@@ -34,7 +35,10 @@ export default async function SettingsPage({
   const { abonnement } = await searchParams;
 
   const joinUrl = `${appUrl()}/join/${session.business.slug}`;
-  const status = statusLabels[session.subscription?.status ?? "none"] ?? statusLabels.none;
+  const status =
+    session.access.level === "free"
+      ? statusLabels.free
+      : (statusLabels[session.subscription?.status ?? "none"] ?? statusLabels.none);
 
   return (
     <div className="space-y-8">
@@ -77,9 +81,11 @@ export default async function SettingsPage({
                 Fidelia — {PRICE_LABEL} / mois ou {PRICE_YEARLY_LABEL} / an
               </p>
               <p className="text-sm text-muted-foreground">
-                {session.subscription?.current_period_end
-                  ? `Prochaine échéance : ${formatDate(session.subscription.current_period_end)}`
-                  : `${TRIAL_DAYS} jours d'essai gratuit, sans engagement.`}
+                {session.access.level === "free"
+                  ? `${session.customerCount} / ${session.access.customerLimit} cartes clients utilisées — l'abonnement lève la limite et ouvre ${TRIAL_DAYS} jours d'essai.`
+                  : session.subscription?.current_period_end
+                    ? `Prochaine échéance : ${formatDate(session.subscription.current_period_end)}`
+                    : `${TRIAL_DAYS} jours d'essai gratuit, sans engagement.`}
               </p>
             </div>
             <Badge variant={status.variant}>{status.label}</Badge>

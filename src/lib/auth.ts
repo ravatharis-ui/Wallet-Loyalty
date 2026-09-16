@@ -2,7 +2,7 @@ import "server-only";
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { Business, Profile, Subscription } from "@/lib/db.types";
-import { hasActiveSubscription, subscriptionAccess, type SubscriptionAccess } from "@/lib/loyalty";
+import { subscriptionAccess, type SubscriptionAccess } from "@/lib/loyalty";
 
 export interface MerchantSession {
   userId: string;
@@ -11,10 +11,10 @@ export interface MerchantSession {
   business: Business;
   profile: Profile;
   subscription: Subscription | null;
-  /** Accès aux fonctionnalités payantes (emails, campagnes). */
-  subscriptionActive: boolean;
-  /** Accès à l'enregistrement des visites, avec période de grâce. */
+  /** Accès aux fonctionnalités, avec palier gratuit et période de grâce. */
   access: SubscriptionAccess;
+  /** Nombre de cartes clients déjà créées, pour le quota du palier gratuit. */
+  customerCount: number;
 }
 
 /**
@@ -38,13 +38,17 @@ export async function requireMerchant(): Promise<MerchantSession> {
 
   if (!profile) redirect("/login?error=profil-introuvable");
 
-  const [{ data: business }, { data: subscription }] = await Promise.all([
+  const [{ data: business }, { data: subscription }, { count }] = await Promise.all([
     supabase.from("businesses").select("*").eq("id", profile.business_id).maybeSingle<Business>(),
     supabase
       .from("subscriptions")
       .select("*")
       .eq("business_id", profile.business_id)
       .maybeSingle<Subscription>(),
+    supabase
+      .from("customers")
+      .select("id", { count: "exact", head: true })
+      .eq("business_id", profile.business_id),
   ]);
 
   if (!business) redirect("/login?error=commerce-introuvable");
@@ -56,8 +60,8 @@ export async function requireMerchant(): Promise<MerchantSession> {
     business,
     profile,
     subscription: subscription ?? null,
-    subscriptionActive: hasActiveSubscription(subscription ?? null),
     access: subscriptionAccess(subscription ?? null),
+    customerCount: count ?? 0,
   };
 }
 

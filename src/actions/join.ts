@@ -5,7 +5,8 @@ import { redirect } from "next/navigation";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { joinSchema, firstError } from "@/lib/validation";
 import { rateLimit, pruneRateLimits } from "@/lib/rate-limit";
-import type { Business, Customer } from "@/lib/db.types";
+import type { Business, Customer, Subscription } from "@/lib/db.types";
+import { canCreateCustomer, subscriptionAccess } from "@/lib/loyalty";
 
 export interface JoinState {
   error?: string;
@@ -50,6 +51,21 @@ export async function joinAction(_prev: JoinState, formData: FormData): Promise<
 
   if (!business) return { error: "Commerce introuvable." };
 
+  // Quota du palier gratuit : vérifié côté serveur, jamais dans le navigateur.
+  const [{ data: subscription }, { count }] = await Promise.all([
+    admin
+      .from("subscriptions")
+      .select("status, current_period_end")
+      .eq("business_id", business.id)
+      .maybeSingle<Pick<Subscription, "status" | "current_period_end">>(),
+    admin
+      .from("customers")
+      .select("id", { count: "exact", head: true })
+      .eq("business_id", business.id),
+  ]);
+
+  const access = subscriptionAccess(subscription ?? null);
+
   // Un client déjà inscrit (même téléphone) retrouve simplement sa carte.
   const { data: existing } = await admin
     .from("customers")
@@ -59,6 +75,15 @@ export async function joinAction(_prev: JoinState, formData: FormData): Promise<
     .maybeSingle<Pick<Customer, "card_token">>();
 
   if (existing) redirect(`/card/${existing.card_token}?existing=1`);
+
+  // Le contrôle vient après la recherche d'un client existant : un client déjà
+  // inscrit doit toujours pouvoir retrouver sa carte, quota atteint ou non.
+  if (!canCreateCustomer(access, count ?? 0)) {
+    return {
+      error:
+        "Ce commerce ne peut pas accepter de nouvelle carte pour le moment. Signalez-le au commerçant.",
+    };
+  }
 
   const { data: created, error } = await admin
     .from("customers")
