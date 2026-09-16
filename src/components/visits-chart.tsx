@@ -1,10 +1,5 @@
 import { cn } from "@/lib/utils";
-
-export interface VisitsPoint {
-  month: string;
-  label: string;
-  visits: number;
-}
+import type { VisitsPoint } from "@/lib/visits-history";
 
 /**
  * Visites par mois.
@@ -23,7 +18,22 @@ export function VisitsChart({
   color: string;
   className?: string;
 }) {
-  const max = Math.max(...data.map((point) => point.visits));
+  const max = Math.max(...data.map((point) => point.visits), 0);
+
+  // Un commerce qui démarre n'a encore aucune visite : une courbe plate et vide
+  // ne dit rien, autant l'annoncer.
+  if (max === 0) {
+    return (
+      <figure className={cn("m-0", className)}>
+        <figcaption className="text-sm font-medium">Visites par mois</figcaption>
+        <p className="mt-4 text-sm text-muted-foreground">
+          Aucune visite enregistrée pour l&apos;instant. La courbe apparaîtra dès votre premier
+          client scanné.
+        </p>
+      </figure>
+    );
+  }
+
   // Dizaine supérieure, avec une marge en haut : sans elle, la barre la plus
   // haute touche le plafond et son étiquette n'a plus de place.
   const scale = Math.ceil((max * 1.18) / 10) * 10;

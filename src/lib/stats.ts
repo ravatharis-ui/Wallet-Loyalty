@@ -1,7 +1,8 @@
 import "server-only";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { INACTIVITY_30_DAYS } from "@/lib/loyalty";
-import type { Customer } from "@/lib/db.types";
+import type { Customer, Visit } from "@/lib/db.types";
+import { bucketVisitsByMonth, historyStart, type VisitsPoint } from "@/lib/visits-history";
 
 export interface DashboardStats {
   customers: number;
@@ -9,6 +10,8 @@ export interface DashboardStats {
   rewardsRedeemed: number;
   toReengage: number;
   inactiveCustomers: Pick<Customer, "id" | "first_name" | "last_visit_at">[];
+  /** Visites des six derniers mois, mois courant inclus. */
+  visitsByMonth: VisitsPoint[];
 }
 
 /** Date limite d'inactivité (30 jours) au format ISO. */
@@ -22,7 +25,7 @@ export async function getDashboardStats(businessId: string): Promise<DashboardSt
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
   const cutoff = inactivityCutoff(INACTIVITY_30_DAYS, now);
 
-  const [customers, visits, rewards, inactive] = await Promise.all([
+  const [customers, visits, rewards, inactive, history] = await Promise.all([
     supabase
       .from("customers")
       .select("id", { count: "exact", head: true })
@@ -46,6 +49,15 @@ export async function getDashboardStats(businessId: string): Promise<DashboardSt
       .order("last_visit_at", { ascending: true })
       .limit(5)
       .returns<Pick<Customer, "id" | "first_name" | "last_visit_at">[]>(),
+    // Seules les dates sont chargées, et l'agrégation se fait en mémoire :
+    // à l'échelle d'un commerce, cela reste quelques centaines de lignes.
+    supabase
+      .from("visits")
+      .select("created_at")
+      .eq("business_id", businessId)
+      .gte("created_at", historyStart(now))
+      .limit(10_000)
+      .returns<Pick<Visit, "created_at">[]>(),
   ]);
 
   return {
@@ -54,5 +66,9 @@ export async function getDashboardStats(businessId: string): Promise<DashboardSt
     rewardsRedeemed: rewards.count ?? 0,
     toReengage: inactive.count ?? 0,
     inactiveCustomers: inactive.data ?? [],
+    visitsByMonth: bucketVisitsByMonth(
+      (history.data ?? []).map((visit) => visit.created_at),
+      now,
+    ),
   };
 }

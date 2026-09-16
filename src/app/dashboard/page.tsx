@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Alert } from "@/components/ui/alert";
 import { formatRelativeDays } from "@/lib/utils";
 import { loyalRevenueCents, formatCents, formatCentsPrecise } from "@/lib/revenue";
+import { VisitsChart } from "@/components/visits-chart";
+import { safeCardColor, readableTextColor } from "@/lib/colors";
 
 export const metadata = { title: "Tableau de bord" };
 
@@ -31,6 +33,7 @@ export default async function DashboardPage() {
     stats.visitsThisMonth,
     session.business.average_basket_cents,
   );
+  const color = safeCardColor(session.business.card_color);
 
   return (
     <div className="space-y-6">
@@ -68,7 +71,7 @@ export default async function DashboardPage() {
       </div>
 
       {revenueCents !== null ? (
-        <Card className="bg-primary text-primary-foreground">
+        <Card style={{ background: color, color: readableTextColor(color) }}>
           <p className="text-sm opacity-80">
             Chiffre d&apos;affaires de vos clients fidèles ce mois
           </p>
@@ -78,17 +81,7 @@ export default async function DashboardPage() {
             {formatCentsPrecise(session.business.average_basket_cents ?? 0)} de panier moyen
           </p>
         </Card>
-      ) : (
-        <Card className="border-dashed">
-          <p className="text-sm text-muted-foreground">
-            Renseignez votre <strong>panier moyen</strong> dans les réglages pour voir, chaque mois,
-            ce que représentent vos clients fidèles en euros.
-          </p>
-          <Button asChild variant="outline" size="sm" className="mt-3">
-            <Link href="/dashboard/settings#commerce">Renseigner mon panier moyen</Link>
-          </Button>
-        </Card>
-      )}
+      ) : null}
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Stat label="Clients" value={stats.customers} />
@@ -97,34 +90,49 @@ export default async function DashboardPage() {
         <Stat label="À relancer" value={stats.toReengage} />
       </div>
 
-      <section className="space-y-3">
-        <h2 className="font-semibold">Clients à relancer</h2>
-        {stats.inactiveCustomers.length > 0 ? (
-          <Card className="divide-y divide-border p-0">
-            {stats.inactiveCustomers.map((customer) => (
-              <Link
-                key={customer.id}
-                href={`/dashboard/customers/${customer.id}`}
-                className="flex items-center justify-between px-5 py-3 hover:bg-muted"
-              >
-                <span className="font-medium">{customer.first_name}</span>
-                <span className="text-sm text-muted-foreground">
-                  Dernière visite : {formatRelativeDays(customer.last_visit_at).toLowerCase()}
-                </span>
-              </Link>
-            ))}
-          </Card>
-        ) : (
-          <Card>
-            <p className="text-sm text-muted-foreground">
-              Aucun client inactif depuis plus de 30 jours. 🎉
+      <div className="grid items-start gap-6 md:grid-cols-[1.4fr_1fr]">
+        <Card>
+          <VisitsChart data={stats.visitsByMonth} color={color} />
+        </Card>
+
+        <div className="space-y-3">
+          <h2 className="font-semibold">Clients à relancer</h2>
+          {stats.inactiveCustomers.length > 0 ? (
+            <Card className="divide-y divide-border p-0">
+              {stats.inactiveCustomers.map((customer) => (
+                <Link
+                  key={customer.id}
+                  href={`/dashboard/customers/${customer.id}`}
+                  className="flex items-center justify-between px-5 py-3 hover:bg-muted"
+                >
+                  <span className="font-medium">{customer.first_name}</span>
+                  <span className="text-sm text-muted-foreground">
+                    {formatRelativeDays(customer.last_visit_at).toLowerCase()}
+                  </span>
+                </Link>
+              ))}
+            </Card>
+          ) : (
+            <Card>
+              <p className="text-sm text-muted-foreground">
+                Aucun client inactif depuis plus de 30 jours. 🎉
+              </p>
+            </Card>
+          )}
+          <Button asChild variant="outline" className="w-full">
+            <Link href="/dashboard/customers?filter=inactive">Voir les clients</Link>
+          </Button>
+          {revenueCents === null ? (
+            <p className="text-xs text-muted-foreground">
+              Vous pouvez renseigner votre panier moyen dans les{" "}
+              <Link href="/dashboard/settings#commerce" className="underline">
+                réglages
+              </Link>{" "}
+              pour chiffrer ce que représentent vos clients fidèles.
             </p>
-          </Card>
-        )}
-        <Button asChild variant="outline">
-          <Link href="/dashboard/customers?filter=inactive">Voir les clients</Link>
-        </Button>
-      </section>
+          ) : null}
+        </div>
+      </div>
     </div>
   );
 }

@@ -215,6 +215,11 @@ Les données de fidélité, elles, sont intégralement préservées.
 moyen`. C'est une estimation assumée, pas une mesure du gain incrémental : le
   libellé et le détail du calcul restent affichés pour que le chiffre soit
   vérifiable. Rien n'est affiché tant que le panier moyen n'est pas renseigné.
+- **Courbe des visites** : le tableau de bord du commerçant affiche ses six
+  derniers mois, agrégés en mémoire à partir des seules dates de visite. Les
+  mois sans visite restent à zéro — un trou dans la courbe se lirait comme une
+  baisse d'activité. Un commerce qui démarre voit un message explicite plutôt
+  qu'un graphique vide.
 - **Page de démonstration** (`/demo`) : un commerce fictif avec des données
   statiques, hors base, pour montrer à un prospect un compte vivant plutôt qu'un
   tableau de bord vide. Clairement étiquetée comme fictive.
