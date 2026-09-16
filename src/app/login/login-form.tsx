@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { loginAction, logoutAction, type ActionState } from "@/actions/auth";
 import { Input } from "@/components/ui/input";
@@ -55,6 +56,11 @@ export function LoginForm() {
       <SubmitButton className="w-full" size="lg" pendingText="Connexion…">
         Se connecter
       </SubmitButton>
+      <p className="text-center text-sm">
+        <Link href="/mot-de-passe-oublie" className="text-muted-foreground underline">
+          Mot de passe oublié ?
+        </Link>
+      </p>
     </form>
   );
 }

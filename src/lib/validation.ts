@@ -26,6 +26,19 @@ export const loginSchema = z.object({
   password: z.string().min(1, "Mot de passe requis").max(72),
 });
 
+export const forgotPasswordSchema = z.object({
+  email: z.string().trim().email("Email invalide"),
+});
+
+export const resetPasswordSchema = z
+  .object({
+    password: z.string().min(8, "Mot de passe : 8 caractères minimum").max(72),
+    confirmation: z.string(),
+  })
+  .refine((data) => data.password === data.confirmation, {
+    message: "Les deux mots de passe ne correspondent pas",
+  });
+
 export const businessSchema = z.object({
   name: trimmed(2, 80),
   phone: z

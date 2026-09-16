@@ -96,3 +96,33 @@ describe("campagne", () => {
     ).toBe(false);
   });
 });
+
+describe("réinitialisation de mot de passe", () => {
+  it("refuse une adresse invalide", () => {
+    expect(forgotPasswordSchema.safeParse({ email: "pas-un-email" }).success).toBe(false);
+  });
+
+  it("accepte deux mots de passe identiques d'au moins 8 caractères", () => {
+    expect(
+      resetPasswordSchema.safeParse({ password: "motdepasse1", confirmation: "motdepasse1" })
+        .success,
+    ).toBe(true);
+  });
+
+  it("refuse une confirmation différente", () => {
+    const result = resetPasswordSchema.safeParse({
+      password: "motdepasse1",
+      confirmation: "motdepasse2",
+    });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(firstError(result.error)).toContain("ne correspondent pas");
+    }
+  });
+
+  it("refuse un mot de passe trop court", () => {
+    expect(
+      resetPasswordSchema.safeParse({ password: "court", confirmation: "court" }).success,
+    ).toBe(false);
+  });
+});
