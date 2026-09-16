@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getBusinessBySlug } from "@/lib/public-data";
 import { JoinForm } from "./join-form";
+import { readableTextColor, safeCardColor } from "@/lib/colors";
 
 export const dynamic = "force-dynamic";
 
@@ -17,6 +18,8 @@ export default async function JoinPage({ params }: { params: Promise<{ slug: str
   if (!data) notFound();
 
   const { business, program } = data;
+  const cardColor = safeCardColor(business.card_color);
+  const cardText = readableTextColor(cardColor);
 
   return (
     <main className="mx-auto flex min-h-dvh max-w-md flex-col px-5 py-10">
@@ -32,7 +35,10 @@ export default async function JoinPage({ params }: { params: Promise<{ slug: str
         <h1 className="text-2xl font-bold">{business.name}</h1>
         <p className="mt-2 text-muted-foreground">Rejoignez notre programme fidélité</p>
         {program ? (
-          <p className="mt-4 rounded-xl bg-muted px-4 py-3 font-medium">
+          <p
+            className="mt-4 rounded-xl px-4 py-3 font-medium"
+            style={{ background: cardColor, color: cardText }}
+          >
             {program.reward_threshold} visites = {program.reward_name}
           </p>
         ) : null}

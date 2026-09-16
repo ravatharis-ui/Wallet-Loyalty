@@ -24,10 +24,16 @@ describe("inscription client", () => {
     if (result.success) expect(result.data.email).toBe("thomas@example.com");
   });
 
-  it("accepte une inscription sans email", () => {
-    const result = joinSchema.safeParse({ ...valid, email: "" });
+  it("refuse une inscription sans email", () => {
+    // L'email est la condition des relances : le produit n'a pas d'intérêt sans lui.
+    expect(joinSchema.safeParse({ ...valid, email: "" }).success).toBe(false);
+    expect(joinSchema.safeParse({ ...valid, email: undefined }).success).toBe(false);
+  });
+
+  it("normalise l'email en minuscules", () => {
+    const result = joinSchema.safeParse({ ...valid, email: "  Thomas@Example.COM " });
     expect(result.success).toBe(true);
-    if (result.success) expect(result.data.email).toBeNull();
+    if (result.success) expect(result.data.email).toBe("thomas@example.com");
   });
 
   it("refuse l'inscription sans consentement", () => {

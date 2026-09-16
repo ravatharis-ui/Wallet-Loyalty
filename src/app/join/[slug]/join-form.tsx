@@ -31,10 +31,10 @@ export function JoinForm({ slug }: { slug: string }) {
         />
       </div>
       <div>
-        <Label htmlFor="email">Email (facultatif)</Label>
-        <Input id="email" name="email" type="email" autoComplete="email" />
+        <Label htmlFor="email">Email *</Label>
+        <Input id="email" name="email" type="email" autoComplete="email" required />
         <p className="mt-1 text-xs text-muted-foreground">
-          Pour recevoir vos récompenses et retrouver votre carte.
+          Pour être prévenu de vos récompenses et retrouver votre carte si vous perdez le lien.
         </p>
       </div>
 

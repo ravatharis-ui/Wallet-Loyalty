@@ -37,9 +37,11 @@ pnpm dev
 ### 1. Supabase
 
 1. Créer un projet sur [supabase.com](https://supabase.com).
-2. Appliquer la migration : copier le contenu de
-   `supabase/migrations/20260101000000_init.sql` dans **SQL Editor** et l'exécuter
-   (ou `supabase db push` avec la CLI liée au projet).
+2. Appliquer les migrations **dans l'ordre**, en copiant chaque fichier de
+   `supabase/migrations/` dans le **SQL Editor** (ou `supabase db push` avec la
+   CLI liée au projet) :
+   - `20260101000000_init.sql` — tables, index, RLS, RPC
+   - `20260102000000_card_customisation.sql` — couleur de carte et bucket `logos`
 3. Dans **Authentication → Providers → Email**, activer Email/Password.
    Pour le MVP, désactiver « Confirm email » afin que l'inscription commerçant
    ouvre directement le dashboard (sinon le commerçant doit confirmer son email
@@ -194,9 +196,16 @@ Les données de fidélité, elles, sont intégralement préservées.
 - **Trois automatisations**, pas une de plus : relance à 30 jours, relance à
   60 jours, notification de récompense. Aucune relance n'est envoyée deux fois
   pour la même période d'inactivité, et le compteur repart dès que le client revient.
-- **Essai gratuit** : à l'inscription, le commerce reçoit 14 jours d'essai
-  (`status = 'trialing'`) sans carte bancaire. Stripe n'est pas nécessaire pour
-  démarrer ; dès le premier webhook, c'est Stripe qui devient la source de vérité.
+- **Mode découverte** : un commerce sans abonnement utilise tout le produit —
+  programme, QR, scan, récompenses, emails — mais ne peut créer que
+  `FREE_TIER_CUSTOMER_LIMIT` (3) cartes clients. La limite est vérifiée côté
+  serveur à l'inscription publique ; un client déjà inscrit retrouve toujours sa
+  carte. L'essai gratuit de 14 jours démarre à la souscription, côté Stripe.
+- **Personnalisation** : le commerçant choisit une couleur et téléverse un logo
+  (Réglages). La couleur est validée puis la couleur de texte calculée par
+  luminance, pour rester lisible quel que soit le fond. Les logos sont stockés
+  dans le bucket public `logos`, sous un préfixe `business_id/` ; l'écriture
+  passe uniquement par le serveur.
 - **Accès payant** : l'envoi d'emails (relances et campagnes) est réservé aux
   commerces dont l'abonnement Stripe est `active` ou `trialing`.
 - **Période de grâce** : à l'expiration (essai terminé, impayé, résiliation),

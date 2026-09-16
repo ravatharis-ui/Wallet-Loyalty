@@ -15,6 +15,14 @@ export const optionalEmailSchema = z
   .optional()
   .transform((v) => (v && v.length > 0 ? v.toLowerCase() : null));
 
+/** Email obligatoire : sans lui, aucune relance n'est possible. */
+export const requiredEmailSchema = z
+  .string()
+  .trim()
+  .min(1, "Email requis")
+  .email("Email invalide")
+  .transform((value) => value.toLowerCase());
+
 export const signupSchema = z.object({
   businessName: trimmed(2, 80),
   email: z.string().trim().email("Email invalide"),
@@ -46,7 +54,16 @@ export const businessSchema = z.object({
     .optional()
     .transform((v) => (v ? v : null)),
   email: optionalEmailSchema,
+  cardColor: z
+    .string()
+    .trim()
+    .regex(/^#[0-9a-fA-F]{6}$/, "Couleur invalide")
+    .transform((value) => value.toLowerCase()),
 });
+
+/** Logo du commerce : formats bitmap courants, 1 Mo maximum. */
+export const LOGO_MAX_BYTES = 1024 * 1024;
+export const LOGO_MIME_TYPES = ["image/png", "image/jpeg", "image/webp"] as const;
 
 export const loyaltyProgramSchema = z.object({
   name: trimmed(2, 80),
@@ -69,7 +86,7 @@ export const joinSchema = z.object({
     .regex(/^[a-z0-9-]{1,50}$/, "Commerce introuvable"),
   firstName: trimmed(1, 60),
   phone: phoneSchema,
-  email: optionalEmailSchema,
+  email: requiredEmailSchema,
   consent: z
     .union([z.literal("on"), z.literal("true"), z.boolean()])
     .refine((v) => v === "on" || v === "true" || v === true, {

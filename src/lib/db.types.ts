@@ -24,6 +24,8 @@ export interface Business {
   name: string;
   slug: string;
   logo_url: string | null;
+  /** Couleur principale de la carte client, au format #rrggbb. */
+  card_color: string;
   phone: string | null;
   email: string | null;
   created_at: string;

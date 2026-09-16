@@ -131,6 +131,14 @@ RLS active sur les 9 tables.
       touchant les permissions. Commandes dans le README.
 - [ ] **Nettoyer les données de test** avant d'installer un vrai commerce.
 
+### ⚙️ À appliquer sur Supabase
+
+- [ ] **Migration `20260102000000_card_customisation.sql`** : couleur de carte et
+      bucket `logos`. Sans elle, les réglages de personnalisation échouent.
+- [ ] **Authentication → URL Configuration → Redirect URLs** : ajouter
+      `https://<domaine>/nouveau-mot-de-passe`, sinon le lien de
+      réinitialisation est refusé.
+
 ### 🟡 À clarifier
 
 - [ ] **TVA** : les CGU annoncent « TTC ». À confirmer avec le comptable

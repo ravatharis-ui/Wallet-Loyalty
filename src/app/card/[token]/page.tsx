@@ -6,6 +6,7 @@ import { QrCode } from "@/components/qr-code";
 import { Alert } from "@/components/ui/alert";
 import { AddToHomeScreen } from "@/components/add-to-home-screen";
 import { formatDate } from "@/lib/utils";
+import { readableTextColor, safeCardColor } from "@/lib/colors";
 
 export const dynamic = "force-dynamic";
 
@@ -33,6 +34,8 @@ export default async function CardPage({
     reward_threshold: program?.reward_threshold ?? 10,
   };
   const threshold = rules.reward_threshold;
+  const cardColor = safeCardColor(business.card_color);
+  const cardText = readableTextColor(cardColor);
   const points = Math.min(customer.current_points, threshold);
   const hasReward = availableRewards.length > 0;
 
@@ -45,13 +48,28 @@ export default async function CardPage({
       ) : null}
       {existing ? <Alert>Vous aviez déjà une carte chez {business.name}. La voici.</Alert> : null}
 
-      <section className="mt-4 rounded-2xl border border-border bg-background p-6 shadow-sm">
-        <p className="text-sm text-muted-foreground">{business.name}</p>
-        <h1 className="text-xl font-bold">{program?.name ?? "Programme fidélité"}</h1>
+      <section
+        className="mt-4 rounded-2xl p-6 shadow-sm"
+        style={{ background: cardColor, color: cardText }}
+      >
+        <div className="flex items-center gap-3">
+          {business.logo_url ? (
+            // eslint-disable-next-line @next/next/no-img-element -- image externe hébergée par Supabase
+            <img
+              src={business.logo_url}
+              alt=""
+              className="h-12 w-12 rounded-xl bg-white/90 object-cover"
+            />
+          ) : null}
+          <div>
+            <p className="text-sm opacity-80">{business.name}</p>
+            <h1 className="text-xl font-bold">{program?.name ?? "Programme fidélité"}</h1>
+          </div>
+        </div>
         <p className="mt-4 text-2xl font-semibold">{customer.first_name}</p>
 
         <div className="mt-6">
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm opacity-80">
             {points} / {threshold} visites
           </p>
           <div
@@ -62,11 +80,12 @@ export default async function CardPage({
             {Array.from({ length: threshold }).map((_, index) => (
               <span
                 key={index}
-                className={
-                  index < points
-                    ? "h-5 w-5 rounded-full bg-accent"
-                    : "h-5 w-5 rounded-full border-2 border-border"
-                }
+                className="h-5 w-5 rounded-full"
+                style={{
+                  background: index < points ? cardText : "transparent",
+                  border: `2px solid ${cardText}`,
+                  opacity: index < points ? 1 : 0.4,
+                }}
               />
             ))}
           </div>
@@ -81,14 +100,14 @@ export default async function CardPage({
         </div>
 
         {hasReward ? (
-          <div className="mt-6 rounded-xl border border-green-200 bg-green-50 p-4">
-            <p className="flex items-center gap-2 font-semibold text-green-900">
+          <div className="mt-6 rounded-xl border border-green-200 bg-green-50 p-4 text-green-900">
+            <p className="flex items-center gap-2 font-semibold">
               <Gift className="h-5 w-5" aria-hidden />
               {availableRewards.length > 1
                 ? `${availableRewards.length} récompenses disponibles`
                 : "Récompense disponible"}
             </p>
-            <p className="mt-1 text-sm text-green-800">
+            <p className="mt-1 text-sm">
               {availableRewards[0].reward_name} — présentez cette carte en caisse.
             </p>
           </div>

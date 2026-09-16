@@ -58,7 +58,7 @@ e2e/                             Playwright
 
 ## Modèle de données
 
-`businesses` — le commerce (tenant).
+`businesses` — le commerce (tenant), avec sa couleur de carte et son logo.
 `profiles` — lie un utilisateur Supabase Auth à un `business_id` + rôle.
 Un utilisateur = un commerce au MVP, mais la table permet d'en ajouter d'autres plus tard.
 `loyalty_programs` — 1 programme actif par commerce (`points_per_visit`, `reward_threshold`).

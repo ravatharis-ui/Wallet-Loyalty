@@ -8,6 +8,7 @@ import { Alert } from "@/components/ui/alert";
 import { QrCode } from "@/components/qr-code";
 import { formatDate } from "@/lib/utils";
 import { BusinessForm } from "./business-form";
+import { LogoForm } from "./logo-form";
 import { SubscriptionActions } from "./subscription-actions";
 import { JoinQrActions } from "./join-qr-actions";
 
@@ -70,6 +71,11 @@ export default async function SettingsPage({
       <section className="space-y-3" id="commerce">
         <h2 className="font-semibold">Votre commerce</h2>
         <BusinessForm business={session.business} />
+      </section>
+
+      <section className="space-y-3" id="logo">
+        <h2 className="font-semibold">Votre logo</h2>
+        <LogoForm logoUrl={session.business.logo_url} />
       </section>
 
       <section className="space-y-3" id="abonnement">
