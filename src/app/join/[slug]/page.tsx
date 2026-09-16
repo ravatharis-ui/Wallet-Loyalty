@@ -46,6 +46,16 @@ export default async function JoinPage({ params }: { params: Promise<{ slug: str
 
       <JoinForm slug={business.slug} />
 
+      <p className="mt-6 text-center text-sm text-muted-foreground">
+        Vous avez déjà une carte ?{" "}
+        <Link
+          href={`/join/${business.slug}/retrouver`}
+          className="font-medium text-accent underline"
+        >
+          La recevoir par email
+        </Link>
+      </p>
+
       <p className="mt-8 text-center text-xs text-muted-foreground">
         <Link href="/legal/confidentialite" className="underline">
           Politique de confidentialité

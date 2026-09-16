@@ -7,6 +7,7 @@ import { joinSchema, firstError } from "@/lib/validation";
 import { rateLimit, pruneRateLimits } from "@/lib/rate-limit";
 import type { Business, Customer, Subscription } from "@/lib/db.types";
 import { canCreateCustomer, subscriptionAccess } from "@/lib/loyalty";
+import { sendWelcomeEmail } from "@/lib/email/card-delivery";
 
 export interface JoinState {
   error?: string;
@@ -93,11 +94,19 @@ export async function joinAction(_prev: JoinState, formData: FormData): Promise<
       phone,
       email,
     })
-    .select("card_token")
-    .single<Pick<Customer, "card_token">>();
+    .select("*")
+    .single<Customer>();
 
   if (error || !created) {
     return { error: "Création de la carte impossible. Réessayez." };
+  }
+
+  // L'email met la carte à l'abri d'un lien perdu. Il ne doit jamais faire
+  // échouer l'inscription : le client a déjà sa carte à l'écran.
+  try {
+    await sendWelcomeEmail(created);
+  } catch {
+    // tracé dans la table messages si l'insertion a eu lieu
   }
 
   redirect(`/card/${created.card_token}?new=1`);

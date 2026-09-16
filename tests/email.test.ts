@@ -4,6 +4,8 @@ import {
   inactive60Email,
   rewardAvailableEmail,
   campaignEmail,
+  welcomeEmail,
+  cardRecoveryEmail,
 } from "@/lib/email/templates";
 import { buildFrom } from "@/lib/email/send";
 
@@ -81,5 +83,41 @@ describe("expéditeur des emails", () => {
 
   it("ignore un EMAIL_FROM sans adresse valide", () => {
     expect(buildFrom("pas-une-adresse", "Café des Amis")).toBe("pas-une-adresse");
+  });
+});
+
+describe("remise de la carte au client", () => {
+  const ctx = {
+    businessName: "Café des Amis",
+    firstName: "Julie",
+    cardUrl: "https://fidelia.app/card/abc",
+  };
+
+  it("l'email de bienvenue porte le lien et rappelle de le conserver", () => {
+    const email = welcomeEmail({ ...ctx, rewardLine: "10 visites = 1 café offert" });
+    expect(email.subject).toContain("Café des Amis");
+    expect(email.html).toContain(ctx.cardUrl);
+    expect(email.text).toContain(ctx.cardUrl);
+    expect(email.html).toContain("Conservez cet email");
+    expect(email.html).toContain("10 visites = 1 café offert");
+  });
+
+  it("s'adapte à un commerce sans programme actif", () => {
+    const email = welcomeEmail({ ...ctx, rewardLine: null });
+    expect(email.html).toContain(ctx.cardUrl);
+    expect(email.html).not.toContain("undefined");
+    expect(email.text).not.toContain("undefined");
+  });
+
+  it("le renvoi de carte contient le lien", () => {
+    const email = cardRecoveryEmail(ctx);
+    expect(email.html).toContain(ctx.cardUrl);
+    expect(email.text).toContain(ctx.cardUrl);
+  });
+
+  it("échappe le nom du commerce dans les deux emails", () => {
+    const hostile = { ...ctx, businessName: "<script>alert(1)</script>" };
+    expect(welcomeEmail({ ...hostile, rewardLine: null }).html).not.toContain("<script>");
+    expect(cardRecoveryEmail(hostile).html).not.toContain("<script>");
   });
 });

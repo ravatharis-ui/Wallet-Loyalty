@@ -128,8 +128,11 @@ export default async function CardPage({
       <AddToHomeScreen />
 
       <p className="mt-8 text-center text-xs text-muted-foreground">
-        Conservez ce lien pour retrouver votre carte. Pour supprimer vos données, contactez{" "}
-        {business.name}
+        Lien perdu ?{" "}
+        <a href={`/join/${business.slug}/retrouver`} className="underline">
+          Recevez-le à nouveau par email
+        </a>
+        . Pour supprimer vos données, contactez {business.name}
         {business.email ? ` (${business.email})` : ""}.
       </p>
     </main>

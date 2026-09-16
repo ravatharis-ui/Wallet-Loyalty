@@ -47,6 +47,56 @@ export interface RenderedEmail {
   text: string;
 }
 
+export function welcomeEmail(ctx: EmailContext & { rewardLine: string | null }): RenderedEmail {
+  const subject = `Votre carte de fidélité ${ctx.businessName} 🎉`;
+  const reward = ctx.rewardLine ? `\n${ctx.rewardLine}\n` : "";
+  const text = `Bienvenue ${ctx.firstName} !
+
+Votre carte de fidélité ${ctx.businessName} est prête.
+${reward}
+Conservez cet email : le lien ci-dessous est le seul moyen de retrouver votre carte
+et vos points. Vous pouvez aussi l'ajouter à l'écran d'accueil de votre téléphone.
+
+Votre carte : ${ctx.cardUrl}
+
+À bientôt !`;
+
+  return {
+    subject,
+    text,
+    html: layout(
+      `<h1 style="margin:0 0 16px;font-size:22px;">Bienvenue ${escapeHtml(ctx.firstName)} ! 🎉</h1>
+       <p style="margin:0 0 12px;line-height:1.6;">Votre carte de fidélité <strong>${escapeHtml(ctx.businessName)}</strong> est prête.</p>
+       ${ctx.rewardLine ? `<p style="margin:0 0 12px;line-height:1.6;"><strong>${escapeHtml(ctx.rewardLine)}</strong></p>` : ""}
+       <p style="margin:0;line-height:1.6;">
+         <strong>Conservez cet email</strong> : le lien ci-dessous est le seul moyen de retrouver
+         votre carte et vos points. Vous pouvez aussi l'ajouter à l'écran d'accueil de votre
+         téléphone pour y accéder en un geste.
+       </p>`,
+      ctx,
+    ),
+  };
+}
+
+export function cardRecoveryEmail(ctx: EmailContext): RenderedEmail {
+  const subject = `Votre carte de fidélité ${ctx.businessName}`;
+  return {
+    subject,
+    text: `Bonjour ${ctx.firstName},
+
+Voici le lien vers votre carte de fidélité ${ctx.businessName} :
+${ctx.cardUrl}
+
+Conservez cet email, ou ajoutez la carte à l'écran d'accueil de votre téléphone.`,
+    html: layout(
+      `<h1 style="margin:0 0 16px;font-size:22px;">Voici votre carte, ${escapeHtml(ctx.firstName)}</h1>
+       <p style="margin:0 0 12px;line-height:1.6;">Vous nous avez demandé le lien vers votre carte de fidélité <strong>${escapeHtml(ctx.businessName)}</strong>. Le voici.</p>
+       <p style="margin:0;line-height:1.6;">Conservez cet email, ou ajoutez la carte à l'écran d'accueil de votre téléphone.</p>`,
+      ctx,
+    ),
+  };
+}
+
 export function inactive30Email(ctx: EmailContext): RenderedEmail {
   const subject = `On vous attend chez ${ctx.businessName} 👋`;
   const text = `Bonjour ${ctx.firstName},

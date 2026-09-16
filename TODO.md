@@ -136,6 +136,10 @@ RLS active sur les 9 tables.
 
 ### ⚙️ À appliquer sur Supabase
 
+- [ ] **Migration `20260103000000_card_delivery.sql`** : types de message
+      `welcome` et `card_recovery`. Sans elle, l'email de bienvenue et le renvoi
+      de carte échouent à l'enregistrement (contrainte `messages_type_check`).
+
 - [x] ~~Migration `20260102000000_card_customisation.sql`~~ : appliquée et
       vérifiée (colonne `card_color`, bucket `logos` public).
 - [x] ~~Redirect URL `/auth/callback`~~ : ajoutée et vérifiée.
