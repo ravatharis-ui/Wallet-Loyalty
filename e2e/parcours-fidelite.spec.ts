@@ -64,7 +64,8 @@ test("parcours complet commerçant + client", async ({ page }) => {
     .eq("name", businessName)
     .single();
   businessId = business!.id;
-  // L'abonnement d'essai est simulé ici : Stripe n'est pas sollicité en E2E.
+  // Abonnement simulé : Stripe n'est pas sollicité en E2E, et cela lève au
+  // passage la limite de 3 cartes du mode découverte.
   await admin
     .from("subscriptions")
     .upsert({ business_id: businessId, status: "trialing" }, { onConflict: "business_id" });
@@ -90,7 +91,7 @@ test("parcours complet commerçant + client", async ({ page }) => {
 
   await clientPage.getByLabel("Prénom *").fill("Thomas");
   await clientPage.getByLabel("Téléphone *").fill(customerPhone);
-  await clientPage.getByLabel("Email (facultatif)").fill(`e2e-client-${suffix}@example.com`);
+  await clientPage.getByLabel("Email *").fill(`e2e-client-${suffix}@example.com`);
   await clientPage.getByRole("checkbox").check();
   await clientPage.getByRole("button", { name: "Créer ma carte" }).click();
 
