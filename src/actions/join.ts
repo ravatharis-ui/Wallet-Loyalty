@@ -23,6 +23,7 @@ export interface JoinState {
 export async function joinAction(_prev: JoinState, formData: FormData): Promise<JoinState> {
   const parsed = joinSchema.safeParse({
     businessSlug: formData.get("businessSlug"),
+    referral: formData.get("referral") ?? "",
     firstName: formData.get("firstName"),
     phone: formData.get("phone"),
     email: formData.get("email") ?? "",
@@ -41,7 +42,7 @@ export async function joinAction(_prev: JoinState, formData: FormData): Promise<
     return { error: "Trop de tentatives. Réessayez dans une heure." };
   }
 
-  const { businessSlug, firstName, phone, email } = parsed.data;
+  const { businessSlug, firstName, phone, email, referral } = parsed.data;
   const admin = createSupabaseAdminClient();
 
   const { data: business } = await admin
@@ -86,6 +87,19 @@ export async function joinAction(_prev: JoinState, formData: FormData): Promise<
     };
   }
 
+  // Le parrain est résolu côté serveur, et seulement dans ce commerce : un code
+  // d'un autre commerce ne doit pas créer de lien entre deux fichiers clients.
+  let referredBy: string | null = null;
+  if (referral) {
+    const { data: referrer } = await admin
+      .from("customers")
+      .select("id")
+      .eq("business_id", business.id)
+      .eq("referral_code", referral)
+      .maybeSingle<Pick<Customer, "id">>();
+    referredBy = referrer?.id ?? null;
+  }
+
   const { data: created, error } = await admin
     .from("customers")
     .insert({
@@ -93,6 +107,7 @@ export async function joinAction(_prev: JoinState, formData: FormData): Promise<
       first_name: firstName,
       phone,
       email,
+      referred_by: referredBy,
     })
     .select("*")
     .single<Customer>();

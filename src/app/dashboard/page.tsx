@@ -4,6 +4,7 @@ import { requireMerchant } from "@/lib/auth";
 import { getDashboardStats } from "@/lib/stats";
 import { getActiveProgram } from "@/actions/loyalty";
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Alert } from "@/components/ui/alert";
 import { formatRelativeDays } from "@/lib/utils";
@@ -85,6 +86,19 @@ export default async function DashboardPage() {
         <Stat label="Récompenses utilisées" value={stats.rewardsRedeemed} />
         <Stat label="À relancer" value={stats.toReengage} />
       </div>
+
+      {stats.referred > 0 ? (
+        <Card className="flex flex-wrap items-center justify-between gap-3">
+          <p className="text-sm">
+            <strong>
+              {stats.referred} client{stats.referred > 1 ? "s" : ""}
+            </strong>{" "}
+            vous {stats.referred > 1 ? "ont" : "a"} été amené
+            {stats.referred > 1 ? "s" : ""} par vos clients fidèles.
+          </p>
+          <Badge variant="success">Parrainage</Badge>
+        </Card>
+      ) : null}
 
       <div className="grid items-start gap-6 md:grid-cols-[1.4fr_1fr]">
         <Card>

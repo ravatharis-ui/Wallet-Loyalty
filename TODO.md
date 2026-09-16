@@ -136,6 +136,9 @@ RLS active sur les 9 tables.
 
 ### ⚙️ À appliquer sur Supabase
 
+- [ ] **Migration `20260105000000_referral.sql`** : parrainage. Remplace aussi
+      `add_visit` — à appliquer après `20260104000000`.
+
 - [ ] **Migration `20260104000000_loyalty_modes.sql`** : modes de fidélité et
       nouvelle version de `add_visit`. Sans elle, l'enregistrement des visites
       échoue — la signature de la fonction a changé.

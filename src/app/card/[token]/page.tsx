@@ -5,6 +5,8 @@ import { progressLabel } from "@/lib/loyalty";
 import { QrCode } from "@/components/qr-code";
 import { Alert } from "@/components/ui/alert";
 import { AddToHomeScreen } from "@/components/add-to-home-screen";
+import { ReferralShare } from "@/components/referral-share";
+import { appUrl } from "@/lib/env";
 import { formatDate } from "@/lib/utils";
 import { readableTextColor, safeCardColor } from "@/lib/colors";
 
@@ -146,6 +148,21 @@ export default async function CardPage({
           Client depuis le {formatDate(customer.created_at)}
         </p>
       </section>
+
+      {program && program.referral_points > 0 ? (
+        <section className="mt-6 rounded-2xl border border-border p-6">
+          <p className="text-sm font-medium">Parrainez vos proches</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Ils gagnent {program.referral_points} points d&apos;avance, et vous aussi dès leur
+            première visite.
+          </p>
+          <ReferralShare
+            url={`${appUrl()}/join/${business.slug}?p=${customer.referral_code}`}
+            businessName={business.name}
+            points={program.referral_points}
+          />
+        </section>
+      ) : null}
 
       <AddToHomeScreen />
 

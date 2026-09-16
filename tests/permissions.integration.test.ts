@@ -193,6 +193,7 @@ run("add_visit (RPC atomique)", () => {
       points_per_visit: 1,
       reward_threshold: 3,
       reward_name: "3e café offert",
+      referral_points: 2,
       active: true,
     });
 
@@ -268,4 +269,138 @@ run("add_visit (RPC atomique)", () => {
       .single();
     expect(after.data!.total_visits).toBe(before.data!.total_visits + 1);
   }, 30_000);
+});
+
+run("parrainage", () => {
+  let admin: SupabaseClient;
+  let businessId: string;
+  let sponsorId: string;
+  let sponsorCode: string;
+
+  beforeAll(async () => {
+    admin = createClient(url!, serviceKey!, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
+    const suffix = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+
+    const { data: business } = await admin
+      .from("businesses")
+      .insert({ name: `Parrain ${suffix}`, slug: `parrain-${suffix}`.slice(0, 50) })
+      .select("id")
+      .single();
+    businessId = business!.id;
+
+    await admin.from("loyalty_programs").insert({
+      business_id: businessId,
+      name: "Test",
+      points_per_visit: 1,
+      reward_threshold: 100,
+      reward_name: "Récompense",
+      referral_points: 5,
+      active: true,
+    });
+
+    const { data: sponsor } = await admin
+      .from("customers")
+      .insert({
+        business_id: businessId,
+        first_name: "Parrain",
+        phone: `06${Math.floor(10_000_000 + Math.random() * 89_999_999)}`,
+      })
+      .select("id, referral_code")
+      .single();
+    sponsorId = sponsor!.id;
+    sponsorCode = sponsor!.referral_code;
+  }, 60_000);
+
+  afterAll(async () => {
+    if (admin && businessId) await admin.from("businesses").delete().eq("id", businessId);
+  });
+
+  it("attribue un code de parrainage distinct du card_token", async () => {
+    const { data } = await admin
+      .from("customers")
+      .select("card_token, referral_code")
+      .eq("id", sponsorId)
+      .single();
+    expect(data!.referral_code).toMatch(/^[a-f0-9]{8}$/);
+    expect(data!.referral_code).not.toBe(data!.card_token);
+  });
+
+  it("récompense parrain et filleul à la première visite, une seule fois", async () => {
+    const { data: godchild } = await admin
+      .from("customers")
+      .insert({
+        business_id: businessId,
+        first_name: "Filleul",
+        phone: `06${Math.floor(10_000_000 + Math.random() * 89_999_999)}`,
+        referred_by: sponsorId,
+      })
+      .select("id")
+      .single();
+
+    // Rien n'est versé tant que le filleul n'est pas venu en boutique.
+    const before = await admin
+      .from("customers")
+      .select("current_points")
+      .eq("id", sponsorId)
+      .single();
+    expect(before.data!.current_points).toBe(0);
+
+    const { data: first } = await admin.rpc("add_visit", {
+      p_customer_id: godchild!.id,
+      p_business_id: businessId,
+      p_dedupe_seconds: 0,
+    });
+    expect(first.referral_rewarded).toBe(true);
+    // 1 point de visite + 5 de parrainage
+    expect(first.current_points).toBe(6);
+
+    const sponsorAfter = await admin
+      .from("customers")
+      .select("current_points")
+      .eq("id", sponsorId)
+      .single();
+    expect(sponsorAfter.data!.current_points).toBe(5);
+
+    // Deuxième visite : pas de second bonus.
+    const { data: second } = await admin.rpc("add_visit", {
+      p_customer_id: godchild!.id,
+      p_business_id: businessId,
+      p_dedupe_seconds: 0,
+    });
+    expect(second.referral_rewarded).toBe(false);
+
+    const sponsorFinal = await admin
+      .from("customers")
+      .select("current_points")
+      .eq("id", sponsorId)
+      .single();
+    expect(sponsorFinal.data!.current_points).toBe(5);
+  }, 30_000);
+
+  it("ne récompense pas un client sans parrain", async () => {
+    const { data: solo } = await admin
+      .from("customers")
+      .insert({
+        business_id: businessId,
+        first_name: "Seul",
+        phone: `06${Math.floor(10_000_000 + Math.random() * 89_999_999)}`,
+      })
+      .select("id")
+      .single();
+
+    const { data: visit } = await admin.rpc("add_visit", {
+      p_customer_id: solo!.id,
+      p_business_id: businessId,
+      p_dedupe_seconds: 0,
+    });
+    expect(visit.referral_rewarded).toBe(false);
+    expect(visit.current_points).toBe(1);
+  }, 30_000);
+
+  it("le code de parrainage ne donne accès à aucune donnée du parrain", async () => {
+    // Il ne sert qu'à rattacher un filleul : il n'ouvre ni la carte, ni les points.
+    expect(sponsorCode).not.toMatch(/^[a-f0-9]{32}$/);
+  });
 });

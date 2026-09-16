@@ -8,12 +8,13 @@ import { Label } from "@/components/ui/label";
 import { Alert } from "@/components/ui/alert";
 import { SubmitButton } from "@/components/submit-button";
 
-export function JoinForm({ slug }: { slug: string }) {
+export function JoinForm({ slug, referral }: { slug: string; referral?: string | null }) {
   const [state, formAction] = useActionState<JoinState, FormData>(joinAction, {});
 
   return (
     <form action={formAction} className="mt-8 space-y-4">
       <input type="hidden" name="businessSlug" value={slug} />
+      {referral ? <input type="hidden" name="referral" value={referral} /> : null}
       <div>
         <Label htmlFor="firstName">Prénom *</Label>
         <Input id="firstName" name="firstName" autoComplete="given-name" required />

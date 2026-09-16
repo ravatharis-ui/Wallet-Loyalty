@@ -56,6 +56,8 @@ export interface LoyaltyProgram {
   points_per_visit: number;
   /** Points gagnés par euro dépensé, en mode « amount ». */
   points_per_euro: number;
+  /** Points offerts au parrain et au filleul. Zéro désactive le parrainage. */
+  referral_points: number;
   reward_threshold: number;
   reward_name: string;
   reward_description: string | null;
@@ -71,6 +73,10 @@ export interface Customer {
   phone: string;
   email: string | null;
   card_token: string;
+  /** Code public partageable — distinct du card_token, qui donne accès à la carte. */
+  referral_code: string;
+  /** Client qui a parrainé celui-ci, le cas échéant. */
+  referred_by: string | null;
   total_visits: number;
   current_points: number;
   last_visit_at: string | null;
@@ -146,5 +152,5 @@ export interface AddVisitResult {
   reward_threshold: number;
   points_added: number;
   rewards_created: number;
-  reward_ids: string[];
+  referral_rewarded: boolean;
 }

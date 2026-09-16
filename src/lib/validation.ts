@@ -70,6 +70,7 @@ export const loyaltyProgramSchema = z.object({
   mode: z.enum(["stamp", "amount"]).default("stamp"),
   pointsPerVisit: z.coerce.number().int().min(1).max(100),
   pointsPerEuro: z.coerce.number().int().min(1).max(100).default(1),
+  referralPoints: z.coerce.number().int().min(0).max(10000).default(0),
   rewardThreshold: z.coerce.number().int().min(1).max(1000),
   rewardName: trimmed(2, 80),
   rewardDescription: z
@@ -81,11 +82,23 @@ export const loyaltyProgramSchema = z.object({
   active: z.coerce.boolean().optional().default(true),
 });
 
+/** Code de parrainage : 8 caractères hexadécimaux, sans valeur d'accès. */
+export const referralCodeSchema = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .regex(/^[a-f0-9]{8}$/, "Code de parrainage invalide");
+
 export const joinSchema = z.object({
   businessSlug: z
     .string()
     .trim()
     .regex(/^[a-z0-9-]{1,50}$/, "Commerce introuvable"),
+  /** Code du parrain, absent la plupart du temps. */
+  referral: z
+    .union([referralCodeSchema, z.literal("")])
+    .optional()
+    .transform((value) => (value ? value : null)),
   firstName: trimmed(1, 60),
   phone: phoneSchema,
   email: requiredEmailSchema,

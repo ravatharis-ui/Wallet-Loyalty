@@ -12,6 +12,8 @@ export interface DashboardStats {
   inactiveCustomers: Pick<Customer, "id" | "first_name" | "last_visit_at">[];
   /** Visites des six derniers mois, mois courant inclus. */
   visitsByMonth: VisitsPoint[];
+  /** Clients arrivés par parrainage. */
+  referred: number;
 }
 
 /** Date limite d'inactivité (30 jours) au format ISO. */
@@ -25,7 +27,7 @@ export async function getDashboardStats(businessId: string): Promise<DashboardSt
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
   const cutoff = inactivityCutoff(INACTIVITY_30_DAYS, now);
 
-  const [customers, visits, rewards, inactive, history] = await Promise.all([
+  const [customers, visits, rewards, inactive, history, referred] = await Promise.all([
     supabase
       .from("customers")
       .select("id", { count: "exact", head: true })
@@ -58,6 +60,11 @@ export async function getDashboardStats(businessId: string): Promise<DashboardSt
       .gte("created_at", historyStart(now))
       .limit(10_000)
       .returns<Pick<Visit, "created_at">[]>(),
+    supabase
+      .from("customers")
+      .select("id", { count: "exact", head: true })
+      .eq("business_id", businessId)
+      .not("referred_by", "is", null),
   ]);
 
   return {
@@ -66,6 +73,7 @@ export async function getDashboardStats(businessId: string): Promise<DashboardSt
     rewardsRedeemed: rewards.count ?? 0,
     toReengage: inactive.count ?? 0,
     inactiveCustomers: inactive.data ?? [],
+    referred: referred.count ?? 0,
     visitsByMonth: bucketVisitsByMonth(
       (history.data ?? []).map((visit) => visit.created_at),
       now,

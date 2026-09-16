@@ -8,6 +8,27 @@ import type { Business, Customer, LoyaltyProgram, Reward } from "@/lib/db.types"
  * Toujours filtrées explicitement sur le slug ou le card_token.
  */
 
+/**
+ * Prénom du parrain, pour l'afficher sur la page d'inscription.
+ * Le code ne donne accès à rien d'autre — ni à la carte, ni aux points.
+ */
+export async function getReferrerFirstName(
+  businessId: string,
+  referralCode: string,
+): Promise<string | null> {
+  if (!/^[a-f0-9]{8}$/.test(referralCode)) return null;
+
+  const admin = createSupabaseAdminClient();
+  const { data } = await admin
+    .from("customers")
+    .select("first_name")
+    .eq("business_id", businessId)
+    .eq("referral_code", referralCode)
+    .maybeSingle<Pick<Customer, "first_name">>();
+
+  return data?.first_name ?? null;
+}
+
 export async function getBusinessBySlug(
   slug: string,
 ): Promise<{ business: Business; program: LoyaltyProgram | null } | null> {

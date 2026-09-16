@@ -45,6 +45,7 @@ pnpm dev
    - `20260103000000_card_delivery.sql` — types de message `welcome` et
      `card_recovery`
    - `20260104000000_loyalty_modes.sql` — modes de fidélité et `add_visit` mis à jour
+   - `20260105000000_referral.sql` — parrainage, `apply_points` et `add_visit` mis à jour
 3. Dans **Authentication → Providers → Email**, activer Email/Password.
    Pour le MVP, désactiver « Confirm email » afin que l'inscription commerçant
    ouvre directement le dashboard (sinon le commerçant doit confirmer son email
@@ -211,6 +212,13 @@ Les données de fidélité, elles, sont intégralement préservées.
   `FREE_TIER_CUSTOMER_LIMIT` (3) cartes clients. La limite est vérifiée côté
   serveur à l'inscription publique ; un client déjà inscrit retrouve toujours sa
   carte. L'essai gratuit de 14 jours démarre à la souscription, côté Stripe.
+- **Parrainage** : chaque client dispose d'un `referral_code` court, **distinct du
+  `card_token`** — partager sa carte reviendrait à donner ses points. Le lien
+  `/join/[slug]?p=<code>` rattache le filleul à son parrain, résolu côté serveur
+  et uniquement dans le même commerce. Le bonus est versé aux deux à la
+  **première visite du filleul**, pas à l'inscription : une inscription se
+  fabrique, un passage en boutique non. Le commerçant règle le montant du bonus
+  (0 = parrainage désactivé).
 - **Ne pas perdre sa carte** : le `card_token` est le seul moyen pour un client
   de retrouver ses points. Il reçoit donc le lien par email dès l'inscription
   (email de bienvenue), peut ajouter la carte à son écran d'accueil, et se le

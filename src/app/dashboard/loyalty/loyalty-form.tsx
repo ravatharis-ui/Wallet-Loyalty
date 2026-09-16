@@ -31,6 +31,7 @@ export function LoyaltyForm({ program }: { program: LoyaltyProgram | null }) {
   const [threshold, setThreshold] = useState(program?.reward_threshold ?? 10);
   const [perEuro, setPerEuro] = useState(program?.points_per_euro ?? 1);
   const [rewardName, setRewardName] = useState(program?.reward_name ?? "1 café offert");
+  const [referralPoints, setReferralPoints] = useState(program?.referral_points ?? 0);
 
   return (
     <form action={formAction} className="space-y-5">
@@ -146,6 +147,23 @@ export function LoyaltyForm({ program }: { program: LoyaltyProgram | null }) {
           />
         </div>
 
+        <div>
+          <Label htmlFor="referralPoints">Bonus de parrainage</Label>
+          <Input
+            id="referralPoints"
+            name="referralPoints"
+            type="number"
+            min={0}
+            max={10000}
+            value={referralPoints}
+            onChange={(event) => setReferralPoints(Number(event.target.value))}
+          />
+          <p className="mt-1 text-xs text-muted-foreground">
+            Points offerts au parrain <strong>et</strong> au filleul, à la première visite du
+            filleul. Mettez 0 pour désactiver le parrainage.
+          </p>
+        </div>
+
         <label className="flex items-center gap-3 text-sm">
           <input
             type="checkbox"
@@ -174,6 +192,11 @@ export function LoyaltyForm({ program }: { program: LoyaltyProgram | null }) {
           <p className="mt-1 text-sm text-muted-foreground">
             Soit {Math.ceil(threshold / Math.max(1, perEuro))} € dépensés, à raison de {perEuro}{" "}
             point{perEuro > 1 ? "s" : ""} par euro.
+          </p>
+        ) : null}
+        {referralPoints > 0 ? (
+          <p className="mt-2 text-sm text-muted-foreground">
+            Parrainage : {referralPoints} points pour le parrain et pour le filleul.
           </p>
         ) : null}
       </Card>

@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { getBusinessBySlug } from "@/lib/public-data";
+import { getBusinessBySlug, getReferrerFirstName } from "@/lib/public-data";
 import { JoinForm } from "./join-form";
 import { readableTextColor, safeCardColor } from "@/lib/colors";
 
@@ -12,10 +12,21 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   return { title: data ? `Rejoindre ${data.business.name}` : "Commerce introuvable" };
 }
 
-export default async function JoinPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function JoinPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ p?: string }>;
+}) {
   const { slug } = await params;
+  const { p: referralCode } = await searchParams;
   const data = await getBusinessBySlug(slug);
   if (!data) notFound();
+
+  const referrerName = referralCode
+    ? await getReferrerFirstName(data.business.id, referralCode)
+    : null;
 
   const { business, program } = data;
   const cardColor = safeCardColor(business.card_color);
@@ -44,7 +55,16 @@ export default async function JoinPage({ params }: { params: Promise<{ slug: str
         ) : null}
       </div>
 
-      <JoinForm slug={business.slug} />
+      {referrerName ? (
+        <p className="mt-4 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-center text-sm text-green-900">
+          🎁 <strong>{referrerName}</strong> vous invite
+          {program && program.referral_points > 0
+            ? ` : vous gagnez ${program.referral_points} points d'avance dès votre première visite.`
+            : "."}
+        </p>
+      ) : null}
+
+      <JoinForm slug={business.slug} referral={referrerName ? (referralCode ?? null) : null} />
 
       <p className="mt-6 text-center text-sm text-muted-foreground">
         Vous avez déjà une carte ?{" "}
