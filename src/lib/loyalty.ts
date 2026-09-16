@@ -184,7 +184,8 @@ export const FREE_TIER_CUSTOMER_LIMIT = 3;
  * - `active` : abonnement en cours (ou essai Stripe) — tout est illimité.
  * - `free`   : jamais abonné — tout fonctionne, plafonné à 3 cartes clients.
  * - `grace`  : abonnement expiré depuis moins de 7 jours — les visites
- *              continuent, les envois d'emails sont coupés.
+ *              continuent pour les clients existants, mais aucune nouvelle
+ *              carte n'est créée et les envois d'emails sont coupés.
  * - `blocked`: au-delà — consultation seule.
  */
 export type AccessLevel = "active" | "free" | "grace" | "blocked";
@@ -219,11 +220,14 @@ export function subscriptionAccess(
     return {
       level: "grace",
       graceDaysLeft: Math.max(1, Math.ceil((graceEnd - now.getTime()) / 86_400_000)),
-      customerLimit: FREE_TIER_CUSTOMER_LIMIT,
+      // Un commerce expiré continue de servir ses clients, mais ne recrute plus :
+      // laisser la limite du palier gratuit donnerait une règle incohérente
+      // selon la taille du fichier client.
+      customerLimit: 0,
     };
   }
 
-  return { level: "blocked", graceDaysLeft: null, customerLimit: FREE_TIER_CUSTOMER_LIMIT };
+  return { level: "blocked", graceDaysLeft: null, customerLimit: 0 };
 }
 
 /** Une nouvelle carte client peut-elle être créée ? */

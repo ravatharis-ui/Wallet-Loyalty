@@ -17,7 +17,7 @@ export function LoginForm() {
 
   // Session orpheline : l'utilisateur existe encore, mais son commerce a été
   // supprimé. Se reconnecter n'y changerait rien, il faut clore la session.
-  if (sessionError) {
+  if (sessionError === "profil-introuvable" || sessionError === "commerce-introuvable") {
     return (
       <div className="mt-6 space-y-4">
         <Alert variant="error">
@@ -37,6 +37,15 @@ export function LoginForm() {
 
   return (
     <form action={formAction} className="mt-6 space-y-4">
+      {sessionError === "lien-invalide" ? (
+        <Alert variant="error">
+          Ce lien n&apos;est plus valide — il a expiré ou a déjà été utilisé.{" "}
+          <Link href="/mot-de-passe-oublie" className="underline">
+            Demandez-en un nouveau
+          </Link>
+          .
+        </Alert>
+      ) : null}
       <input type="hidden" name="next" value={next} />
       <div>
         <Label htmlFor="email">Email</Label>

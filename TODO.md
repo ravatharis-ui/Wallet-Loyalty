@@ -136,8 +136,9 @@ RLS active sur les 9 tables.
 - [x] ~~Migration `20260102000000_card_customisation.sql`~~ : appliquée et
       vérifiée (colonne `card_color`, bucket `logos` public).
 - [ ] **Authentication → URL Configuration → Redirect URLs** : ajouter
-      `https://<domaine>/nouveau-mot-de-passe`, sinon le lien de
-      réinitialisation est refusé.
+      `https://<domaine>/auth/callback` (le lien passe par ce point
+      d'atterrissage, qui échange le code PKCE contre une session avant de
+      rediriger vers le formulaire).
 
 ### 🟡 À clarifier
 

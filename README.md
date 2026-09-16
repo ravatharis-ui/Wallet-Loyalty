@@ -210,7 +210,8 @@ Les données de fidélité, elles, sont intégralement préservées.
   commerces dont l'abonnement Stripe est `active` ou `trialing`.
 - **Période de grâce** : à l'expiration (essai terminé, impayé, résiliation),
   l'enregistrement des visites continue pendant 7 jours avec un bandeau
-  d'avertissement, puis est refusé. La consultation des clients, des cartes et de
+  d'avertissement, puis est refusé. Aucune nouvelle carte client n'est créée
+  pendant cette période : le commerce sert ses clients mais ne recrute plus. La consultation des clients, des cartes et de
   l'historique reste possible, et rien n'est supprimé : réactiver l'abonnement
   suffit à tout relancer. Objectif : ne jamais couper le comptoir du jour au
   lendemain devant un client qui attend.

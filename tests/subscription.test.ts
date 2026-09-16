@@ -150,3 +150,29 @@ describe("palier gratuit — 3 cartes clients", () => {
     expect(canSendEmails(grace)).toBe(false);
   });
 });
+
+describe("création de cartes selon l'état de l'abonnement", () => {
+  const now = new Date("2026-03-01T12:00:00Z");
+  const daysFromNow = (days: number) => new Date(now.getTime() + days * 86_400_000).toISOString();
+
+  it("interdit toute nouvelle carte pendant la période de grâce", () => {
+    // Le commerce continue de servir ses clients existants, mais ne recrute
+    // plus tant qu'il n'a pas régularisé — quelle que soit la taille du fichier.
+    const grace = subscriptionAccess(
+      { status: "past_due", current_period_end: daysFromNow(-2) },
+      now,
+    );
+    expect(grace.level).toBe("grace");
+    expect(canCreateCustomer(grace, 0)).toBe(false);
+    expect(canCreateCustomer(grace, 200)).toBe(false);
+  });
+
+  it("laisse toujours ajouter des visites pendant la grâce", () => {
+    const grace = subscriptionAccess(
+      { status: "past_due", current_period_end: daysFromNow(-2) },
+      now,
+    );
+    // Le blocage des visites ne concerne que le niveau « blocked ».
+    expect(grace.level).not.toBe("blocked");
+  });
+});
