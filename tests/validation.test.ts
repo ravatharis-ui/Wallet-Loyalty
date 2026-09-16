@@ -4,6 +4,9 @@ import {
   cardTokenSchema,
   loyaltyProgramSchema,
   campaignSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
+  firstError,
 } from "@/lib/validation";
 
 describe("inscription client", () => {
