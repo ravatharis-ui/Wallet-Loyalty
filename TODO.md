@@ -84,6 +84,9 @@ RLS active sur les 9 tables.
 
 **Vérifié manuellement en production :**
 
+- Personnalisation de la carte (couleur, logo), mot de passe oublié de bout en
+  bout, et limite de 3 cartes du mode découverte
+
 - Parcours complet : inscription commerçant → programme → QR d'inscription →
   inscription client → carte digitale → scan → ajout de visite
 - Stripe en mode test : Checkout, abonnement, portail client, webhook (200 sur
@@ -135,10 +138,7 @@ RLS active sur les 9 tables.
 
 - [x] ~~Migration `20260102000000_card_customisation.sql`~~ : appliquée et
       vérifiée (colonne `card_color`, bucket `logos` public).
-- [ ] **Authentication → URL Configuration → Redirect URLs** : ajouter
-      `https://<domaine>/auth/callback` (le lien passe par ce point
-      d'atterrissage, qui échange le code PKCE contre une session avant de
-      rediriger vers le formulaire).
+- [x] ~~Redirect URL `/auth/callback`~~ : ajoutée et vérifiée.
 
 ### 🟡 À clarifier
 
