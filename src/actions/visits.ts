@@ -3,12 +3,15 @@
 import { revalidatePath } from "next/cache";
 import { requireMerchant } from "@/lib/auth";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { cardTokenSchema, uuidSchema } from "@/lib/validation";
+import { cardTokenSchema, uuidSchema, amountSchema } from "@/lib/validation";
 import { notifyRewardAvailable } from "@/lib/email/notify";
 import type { AddVisitResult, Customer, LoyaltyProgram, Reward } from "@/lib/db.types";
 
 export interface CustomerSummary {
   id: string;
+  /** Le mode décide si le scanner demande un montant. */
+  mode: "stamp" | "amount";
+  pointsPerEuro: number;
   firstName: string;
   currentPoints: number;
   totalVisits: number;
@@ -49,6 +52,8 @@ async function buildSummary(
   return {
     customer: {
       id: customer.id,
+      mode: program.mode,
+      pointsPerEuro: program.points_per_euro,
       firstName: customer.first_name,
       currentPoints: customer.current_points,
       totalVisits: customer.total_visits,
@@ -111,6 +116,7 @@ export interface AddVisitState {
     currentPoints: number;
     totalVisits: number;
     rewardThreshold: number;
+    pointsAdded: number;
     rewardsCreated: number;
   };
 }
@@ -119,7 +125,7 @@ export interface AddVisitState {
  * Ajoute une visite. L'atomicité, le contrôle d'appartenance et la protection
  * anti-doublon sont assurés par la fonction SQL `add_visit`.
  */
-export async function addVisitAction(customerId: string): Promise<AddVisitState> {
+export async function addVisitAction(customerId: string, amount?: string): Promise<AddVisitState> {
   const session = await requireMerchant();
 
   if (session.access.level === "blocked") {
@@ -132,10 +138,20 @@ export async function addVisitAction(customerId: string): Promise<AddVisitState>
   const parsed = uuidSchema.safeParse(customerId);
   if (!parsed.success) return { error: "Client invalide." };
 
+  // Le montant n'est validé que s'il est fourni : en mode tampon, la fonction
+  // SQL l'ignore, et c'est elle qui exige le montant en mode points.
+  let amountCents: number | null = null;
+  if (amount !== undefined && amount !== "") {
+    const parsedAmount = amountSchema.safeParse(amount);
+    if (!parsedAmount.success) return { error: "Montant invalide." };
+    amountCents = parsedAmount.data;
+  }
+
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase.rpc("add_visit", {
     p_customer_id: parsed.data,
     p_business_id: session.businessId,
+    p_amount_cents: amountCents,
   });
 
   if (error) {
@@ -144,6 +160,12 @@ export async function addVisitAction(customerId: string): Promise<AddVisitState>
     }
     if (error.message.includes("customer_not_found")) {
       return { error: "Client introuvable." };
+    }
+    if (error.message.includes("amount_required")) {
+      return { error: "Saisissez le montant de l'achat." };
+    }
+    if (error.message.includes("amount_too_small")) {
+      return { error: "Montant trop faible pour rapporter des points." };
     }
     return { error: "Visite non enregistrée. Réessayez." };
   }
@@ -186,6 +208,7 @@ export async function addVisitAction(customerId: string): Promise<AddVisitState>
       currentPoints: result.current_points,
       totalVisits: result.total_visits,
       rewardThreshold: result.reward_threshold,
+      pointsAdded: result.points_added,
       rewardsCreated: result.rewards_created,
     },
   };

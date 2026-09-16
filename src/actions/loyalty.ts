@@ -31,7 +31,9 @@ export async function saveLoyaltyProgramAction(
 
   const parsed = loyaltyProgramSchema.safeParse({
     name: formData.get("name"),
-    pointsPerVisit: formData.get("pointsPerVisit"),
+    mode: formData.get("mode") ?? "stamp",
+    pointsPerVisit: formData.get("pointsPerVisit") ?? 1,
+    pointsPerEuro: formData.get("pointsPerEuro") ?? 1,
     rewardThreshold: formData.get("rewardThreshold"),
     rewardName: formData.get("rewardName"),
     rewardDescription: formData.get("rewardDescription") ?? "",
@@ -42,7 +44,9 @@ export async function saveLoyaltyProgramAction(
   const supabase = await createSupabaseServerClient();
   const values = {
     name: parsed.data.name,
+    mode: parsed.data.mode,
     points_per_visit: parsed.data.pointsPerVisit,
+    points_per_euro: parsed.data.pointsPerEuro,
     reward_threshold: parsed.data.rewardThreshold,
     reward_name: parsed.data.rewardName,
     reward_description: parsed.data.rewardDescription,

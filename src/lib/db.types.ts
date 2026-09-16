@@ -3,6 +3,9 @@
  * Écrits à la main pour rester lisibles et alignés sur supabase/migrations.
  */
 
+/** Carte à tamponner, ou points selon le montant dépensé. */
+export type LoyaltyMode = "stamp" | "amount";
+
 export type RewardStatus = "available" | "redeemed" | "expired";
 export type MessageType =
   | "welcome"
@@ -49,7 +52,10 @@ export interface LoyaltyProgram {
   id: string;
   business_id: string;
   name: string;
+  mode: LoyaltyMode;
   points_per_visit: number;
+  /** Points gagnés par euro dépensé, en mode « amount ». */
+  points_per_euro: number;
   reward_threshold: number;
   reward_name: string;
   reward_description: string | null;
@@ -77,6 +83,8 @@ export interface Visit {
   business_id: string;
   customer_id: string;
   points_added: number;
+  /** Montant de l'achat en centimes, uniquement en mode « amount ». */
+  amount_cents: number | null;
   created_at: string;
   created_by: string | null;
 }
@@ -136,6 +144,7 @@ export interface AddVisitResult {
   current_points: number;
   total_visits: number;
   reward_threshold: number;
+  points_added: number;
   rewards_created: number;
   reward_ids: string[];
 }

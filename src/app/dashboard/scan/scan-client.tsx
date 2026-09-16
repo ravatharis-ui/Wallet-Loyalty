@@ -13,6 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Alert } from "@/components/ui/alert";
 import { formatRelativeDays } from "@/lib/utils";
 
@@ -34,6 +35,7 @@ export function ScanClient() {
   const [error, setError] = useState<string | null>(null);
   const [visit, setVisit] = useState<AddVisitState | null>(null);
   const [query, setQuery] = useState("");
+  const [amount, setAmount] = useState("");
   const [pending, startTransition] = useTransition();
 
   function reset() {
@@ -42,6 +44,7 @@ export function ScanClient() {
     setError(null);
     setVisit(null);
     setQuery("");
+    setAmount("");
   }
 
   function handleToken(token: string) {
@@ -76,7 +79,7 @@ export function ScanClient() {
   function handleAddVisit() {
     if (!customer || pending) return;
     startTransition(async () => {
-      const result = await addVisitAction(customer.id);
+      const result = await addVisitAction(customer.id, amount);
       setVisit(result);
       if (result.result) {
         setCustomer({
@@ -147,18 +150,29 @@ export function ScanClient() {
             <p className="font-medium">
               {customer.currentPoints} / {customer.rewardThreshold} points
             </p>
-            <div className="mt-2 flex flex-wrap gap-1.5">
-              {Array.from({ length: customer.rewardThreshold }).map((_, index) => (
-                <span
-                  key={index}
-                  className={
-                    index < customer.currentPoints
-                      ? "h-4 w-4 rounded-full bg-accent"
-                      : "h-4 w-4 rounded-full border-2 border-border"
-                  }
+            {customer.mode === "stamp" ? (
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {Array.from({ length: customer.rewardThreshold }).map((_, index) => (
+                  <span
+                    key={index}
+                    className={
+                      index < customer.currentPoints
+                        ? "h-4 w-4 rounded-full bg-accent"
+                        : "h-4 w-4 rounded-full border-2 border-border"
+                    }
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="mt-2 h-3 w-full overflow-hidden rounded-full bg-muted">
+                <div
+                  className="h-full rounded-full bg-accent"
+                  style={{
+                    width: `${Math.min(100, (customer.currentPoints / customer.rewardThreshold) * 100)}%`,
+                  }}
                 />
-              ))}
-            </div>
+              </div>
+            )}
           </div>
 
           {customer.availableRewards > 0 ? (
@@ -174,7 +188,7 @@ export function ScanClient() {
 
           {visit?.result && !visit.duplicate ? (
             <div className="animate-pop rounded-xl bg-muted p-4 text-center">
-              <p className="text-3xl font-bold">+1 ⭐</p>
+              <p className="text-3xl font-bold">+{visit.result.pointsAdded} ⭐</p>
               <p className="mt-1 text-sm text-muted-foreground">
                 {visit.result.currentPoints} / {visit.result.rewardThreshold} points
               </p>
@@ -187,6 +201,30 @@ export function ScanClient() {
           ) : null}
 
           {visit?.error ? <Alert variant="error">{visit.error}</Alert> : null}
+
+          {/* Le montant n'est demandé qu'en mode points : en mode tampon, une
+              saisie de plus rallongerait le passage en caisse pour rien. */}
+          {customer.mode === "amount" && !visit?.result ? (
+            <div>
+              <Label htmlFor="amount">Montant de l&apos;achat</Label>
+              <div className="flex items-center gap-2">
+                <Input
+                  id="amount"
+                  value={amount}
+                  onChange={(event) => setAmount(event.target.value)}
+                  inputMode="decimal"
+                  placeholder="45,00"
+                  autoFocus
+                  className="text-lg"
+                />
+                <span className="text-lg text-muted-foreground">€</span>
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {customer.pointsPerEuro} point{customer.pointsPerEuro > 1 ? "s" : ""} par euro
+                dépensé.
+              </p>
+            </div>
+          ) : null}
 
           {visit?.result ? (
             <Button size="lg" variant="outline" className="w-full" onClick={reset}>

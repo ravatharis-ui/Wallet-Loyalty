@@ -6,6 +6,7 @@ import {
   slugify,
   daysSince,
   isInactive,
+  pointsForVisit,
 } from "@/lib/loyalty";
 
 const cafeRules = { points_per_visit: 1, reward_threshold: 10 };
@@ -111,5 +112,52 @@ describe("slugify", () => {
     expect(slugify("Café des Amis")).toBe("cafe-des-amis");
     expect(slugify("  Boulangerie   Élise !! ")).toBe("boulangerie-elise");
     expect(slugify("---")).toBe("");
+  });
+});
+
+describe("mode « points selon le montant »", () => {
+  const rules = {
+    mode: "amount" as const,
+    points_per_visit: 1,
+    points_per_euro: 1,
+    reward_threshold: 500,
+  };
+
+  it("convertit le montant en points, un point par euro", () => {
+    expect(pointsForVisit(rules, 4500)).toBe(45);
+  });
+
+  it("ignore les centimes", () => {
+    // Un barème au centime serait illisible pour le client comme pour le commerçant.
+    expect(pointsForVisit(rules, 4599)).toBe(45);
+    expect(pointsForVisit(rules, 99)).toBe(0);
+  });
+
+  it("applique le barème choisi", () => {
+    expect(pointsForVisit({ ...rules, points_per_euro: 10 }, 4500)).toBe(450);
+  });
+
+  it("ne rapporte rien sans montant", () => {
+    expect(pointsForVisit(rules, null)).toBe(0);
+    expect(pointsForVisit(rules, 0)).toBe(0);
+  });
+
+  it("déclenche la récompense au seuil de points", () => {
+    const result = applyVisit({ current_points: 470, total_visits: 9 }, rules, 4500);
+    expect(result.points_added).toBe(45);
+    expect(result.rewards_earned).toBe(1);
+    expect(result.current_points).toBe(15);
+  });
+
+  it("annonce les points restants, pas des visites", () => {
+    expect(progressLabel(320, rules)).toBe("Plus que 180 points !");
+    expect(progressLabel(499, rules)).toBe("Plus qu'un point !");
+    expect(progressLabel(500, rules)).toBe("Récompense disponible !");
+  });
+
+  it("ne change rien au mode tampon", () => {
+    const stamp = { points_per_visit: 1, reward_threshold: 10 };
+    expect(pointsForVisit(stamp, 9999)).toBe(1);
+    expect(progressLabel(7, stamp)).toBe("Plus que 3 visites !");
   });
 });

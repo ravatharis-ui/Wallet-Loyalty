@@ -136,6 +136,10 @@ RLS active sur les 9 tables.
 
 ### ⚙️ À appliquer sur Supabase
 
+- [ ] **Migration `20260104000000_loyalty_modes.sql`** : modes de fidélité et
+      nouvelle version de `add_visit`. Sans elle, l'enregistrement des visites
+      échoue — la signature de la fonction a changé.
+
 - [ ] **Migration `20260103000000_card_delivery.sql`** : types de message
       `welcome` et `card_recovery`. Sans elle, l'email de bienvenue et le renvoi
       de carte échouent à l'enregistrement (contrainte `messages_type_check`).

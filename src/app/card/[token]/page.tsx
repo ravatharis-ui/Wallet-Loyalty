@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { Gift } from "lucide-react";
 import { getCardByToken } from "@/lib/public-data";
-import { progressLabel, visitsUntilReward } from "@/lib/loyalty";
+import { progressLabel } from "@/lib/loyalty";
 import { QrCode } from "@/components/qr-code";
 import { Alert } from "@/components/ui/alert";
 import { AddToHomeScreen } from "@/components/add-to-home-screen";
@@ -30,9 +30,12 @@ export default async function CardPage({
 
   const { customer, business, program, availableRewards } = data;
   const rules = {
+    mode: program?.mode ?? ("stamp" as const),
     points_per_visit: program?.points_per_visit ?? 1,
+    points_per_euro: program?.points_per_euro ?? 1,
     reward_threshold: program?.reward_threshold ?? 10,
   };
+  const isAmountMode = rules.mode === "amount";
   const threshold = rules.reward_threshold;
   const cardColor = safeCardColor(business.card_color);
   const cardText = readableTextColor(cardColor);
@@ -70,31 +73,50 @@ export default async function CardPage({
 
         <div className="mt-6">
           <p className="text-sm opacity-80">
-            {points} / {threshold} visites
+            {isAmountMode
+              ? `${customer.current_points} / ${threshold} points`
+              : `${points} / ${threshold} visites`}
           </p>
-          <div
-            className="mt-3 flex flex-wrap gap-2"
-            role="img"
-            aria-label={`${points} visites sur ${threshold}`}
-          >
-            {Array.from({ length: threshold }).map((_, index) => (
-              <span
-                key={index}
-                className="h-5 w-5 rounded-full"
+          {isAmountMode ? (
+            <div
+              className="mt-3 h-4 w-full overflow-hidden rounded-full"
+              style={{ background: `${cardText}33` }}
+              role="img"
+              aria-label={`${customer.current_points} points sur ${threshold}`}
+            >
+              <div
+                className="h-full rounded-full"
                 style={{
-                  background: index < points ? cardText : "transparent",
-                  border: `2px solid ${cardText}`,
-                  opacity: index < points ? 1 : 0.4,
+                  width: `${Math.min(100, (customer.current_points / threshold) * 100)}%`,
+                  background: cardText,
                 }}
               />
-            ))}
-          </div>
+            </div>
+          ) : (
+            <div
+              className="mt-3 flex flex-wrap gap-2"
+              role="img"
+              aria-label={`${points} visites sur ${threshold}`}
+            >
+              {Array.from({ length: threshold }).map((_, index) => (
+                <span
+                  key={index}
+                  className="h-5 w-5 rounded-full"
+                  style={{
+                    background: index < points ? cardText : "transparent",
+                    border: `2px solid ${cardText}`,
+                    opacity: index < points ? 1 : 0.4,
+                  }}
+                />
+              ))}
+            </div>
+          )}
           <p className="mt-4 font-medium">
             {hasReward
               ? "Votre récompense vous attend !"
               : progressLabel(customer.current_points, rules)}
           </p>
-          {!hasReward && visitsUntilReward(customer.current_points, rules) > 0 && program ? (
+          {!hasReward && program ? (
             <p className="text-sm text-muted-foreground">Objectif : {program.reward_name}</p>
           ) : null}
         </div>

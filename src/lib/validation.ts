@@ -67,7 +67,9 @@ export const LOGO_MIME_TYPES = ["image/png", "image/jpeg", "image/webp"] as cons
 
 export const loyaltyProgramSchema = z.object({
   name: trimmed(2, 80),
+  mode: z.enum(["stamp", "amount"]).default("stamp"),
   pointsPerVisit: z.coerce.number().int().min(1).max(100),
+  pointsPerEuro: z.coerce.number().int().min(1).max(100).default(1),
   rewardThreshold: z.coerce.number().int().min(1).max(1000),
   rewardName: trimmed(2, 80),
   rewardDescription: z
@@ -100,6 +102,16 @@ export const cardTokenSchema = z
   .regex(/^[a-f0-9]{32}$/, "Carte invalide");
 
 export const uuidSchema = z.string().uuid();
+
+/** Montant d'un achat saisi au scan, en euros, converti en centimes. */
+export const amountSchema = z
+  .string()
+  .trim()
+  .min(1, "Montant requis")
+  .transform((value) => value.replace(",", "."))
+  .refine((value) => /^\d{1,6}(\.\d{1,2})?$/.test(value), "Montant invalide")
+  .transform((value) => Math.round(Number(value) * 100))
+  .refine((cents) => cents > 0, "Le montant doit être supérieur à zéro");
 
 /** Formule d'abonnement choisie par le commerçant. */
 export const planSchema = z.enum(["monthly", "yearly"]);

@@ -4,7 +4,7 @@
  * et pour l'affichage côté carte / dashboard.
  */
 
-import type { MessageType, SubscriptionStatus } from "@/lib/db.types";
+import type { LoyaltyMode, MessageType, SubscriptionStatus } from "@/lib/db.types";
 
 export const INACTIVITY_30_DAYS = 30;
 export const INACTIVITY_60_DAYS = 60;
@@ -12,7 +12,9 @@ export const INACTIVITY_60_DAYS = 60;
 export const INACTIVITY_MAX_DAYS = 180;
 
 export interface ProgramRules {
+  mode?: LoyaltyMode;
   points_per_visit: number;
+  points_per_euro?: number;
   reward_threshold: number;
 }
 
@@ -27,12 +29,32 @@ export interface VisitOutcome extends LoyaltyState {
 }
 
 /**
- * Applique une visite à l'état de fidélité d'un client.
- * Modèle "carte à tamponner" : chaque palier atteint consomme
- * `reward_threshold` points et crée une récompense.
+ * Points gagnés pour une visite.
+ *
+ * - mode « stamp » : un nombre fixe par passage, le montant n'entre pas en jeu ;
+ * - mode « amount » : le montant dépensé, converti en euros entiers — les
+ *   centimes ne rapportent rien, sinon le barème deviendrait illisible pour le
+ *   client comme pour le commerçant.
  */
-export function applyVisit(state: LoyaltyState, rules: ProgramRules): VisitOutcome {
-  const pointsPerVisit = Math.max(1, Math.trunc(rules.points_per_visit));
+export function pointsForVisit(rules: ProgramRules, amountCents?: number | null): number {
+  if (rules.mode === "amount") {
+    const perEuro = Math.max(1, Math.trunc(rules.points_per_euro ?? 1));
+    const euros = Math.floor(Math.max(0, amountCents ?? 0) / 100);
+    return euros * perEuro;
+  }
+  return Math.max(1, Math.trunc(rules.points_per_visit));
+}
+
+/**
+ * Applique une visite à l'état de fidélité d'un client.
+ * Chaque palier atteint consomme `reward_threshold` points et crée une récompense.
+ */
+export function applyVisit(
+  state: LoyaltyState,
+  rules: ProgramRules,
+  amountCents?: number | null,
+): VisitOutcome {
+  const pointsPerVisit = pointsForVisit(rules, amountCents);
   const threshold = Math.max(1, Math.trunc(rules.reward_threshold));
 
   let points = state.current_points + pointsPerVisit;
@@ -51,7 +73,11 @@ export function applyVisit(state: LoyaltyState, rules: ProgramRules): VisitOutco
   };
 }
 
-/** Nombre de visites restantes avant la prochaine récompense. */
+/**
+ * Nombre de visites restantes avant la prochaine récompense.
+ * N'a de sens qu'en mode tampon : en mode points, c'est un montant qui manque,
+ * pas un nombre de passages.
+ */
 export function visitsUntilReward(currentPoints: number, rules: ProgramRules): number {
   const pointsPerVisit = Math.max(1, Math.trunc(rules.points_per_visit));
   const threshold = Math.max(1, Math.trunc(rules.reward_threshold));
@@ -61,6 +87,15 @@ export function visitsUntilReward(currentPoints: number, rules: ProgramRules): n
 
 /** Message de progression affiché sur la carte client. */
 export function progressLabel(currentPoints: number, rules: ProgramRules): string {
+  const threshold = Math.max(1, Math.trunc(rules.reward_threshold));
+
+  if (rules.mode === "amount") {
+    const missing = Math.max(0, threshold - currentPoints);
+    if (missing === 0) return "Récompense disponible !";
+    if (missing === 1) return "Plus qu'un point !";
+    return `Plus que ${missing} points !`;
+  }
+
   const remaining = visitsUntilReward(currentPoints, rules);
   if (remaining === 0) return "Récompense disponible !";
   if (remaining === 1) return "Plus qu'une visite !";

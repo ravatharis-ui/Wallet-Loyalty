@@ -44,6 +44,7 @@ pnpm dev
    - `20260102000000_card_customisation.sql` — couleur de carte et bucket `logos`
    - `20260103000000_card_delivery.sql` — types de message `welcome` et
      `card_recovery`
+   - `20260104000000_loyalty_modes.sql` — modes de fidélité et `add_visit` mis à jour
 3. Dans **Authentication → Providers → Email**, activer Email/Password.
    Pour le MVP, désactiver « Confirm email » afin que l'inscription commerçant
    ouvre directement le dashboard (sinon le commerçant doit confirmer son email
@@ -188,9 +189,16 @@ Les données de fidélité, elles, sont intégralement préservées.
 
 ## Fonctionnement métier
 
-- **1 visite = N points** (configurable), **seuil atteint = 1 récompense**.
-  Modèle carte à tamponner : le seuil consomme les points, le total de visites
-  est conservé à vie.
+- **Deux modes de fidélité**, au choix du commerçant :
+  - _carte à tamponner_ — chaque passage vaut N points, quel que soit le montant ;
+  - _points selon le montant_ — le commerçant saisit le montant au scan, et le
+    client gagne N points par euro. Seuls les euros entiers comptent : un barème
+    au centime serait illisible.
+
+  Dans les deux cas, le seuil atteint consomme les points et crée une récompense ;
+  le total de visites est conservé à vie. La carte affiche des pastilles en mode
+  tampon, une jauge en mode points.
+
 - **Ajout de visite atomique** via la fonction SQL `add_visit` : vérification
   d'appartenance, verrou sur le client, création de la visite et de la récompense
   dans une seule transaction, plus une fenêtre anti-doublon de 10 secondes contre
