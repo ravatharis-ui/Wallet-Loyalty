@@ -17,11 +17,7 @@ export type MessageType =
 export type MessageChannel = "email" | "sms" | "push";
 export type MessageStatus = "pending" | "sent" | "failed" | "skipped";
 export type AudienceType =
-  | "all"
-  | "inactive_30_days"
-  | "reward_available"
-  | "new_this_month"
-  | "best_customers";
+  "all" | "inactive_30_days" | "reward_available" | "new_this_month" | "best_customers";
 export type CampaignChannel = "email" | "push" | "both";
 export type CampaignStatus = "draft" | "scheduled" | "sent";
 export type SubscriptionStatus =

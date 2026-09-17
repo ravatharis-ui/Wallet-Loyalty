@@ -5,11 +5,11 @@ import { requireMerchant } from "@/lib/auth";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { campaignSchema, firstError } from "@/lib/validation";
 import { getAudience } from "@/lib/audience";
-import { deliverCampaign } from "@/lib/campaigns";
+import { deliverCampaign, type DeliveryResult } from "@/lib/campaigns";
 import { sendEmail } from "@/lib/email/send";
 import { campaignEmail } from "@/lib/email/templates";
 import { appUrl } from "@/lib/env";
-import type { AudienceType } from "@/lib/db.types";
+import type { AudienceType, CampaignChannel } from "@/lib/db.types";
 import { canSendEmails } from "@/lib/loyalty";
 
 export interface CampaignState {
@@ -22,11 +22,43 @@ export interface CampaignState {
 const IMAGE_MIME_TYPES = ["image/png", "image/jpeg", "image/webp"] as const;
 const IMAGE_MAX_BYTES = 2_000_000;
 
-/** Nombre de destinataires, affiché avant l'envoi. */
-export async function countAudienceAction(audienceType: AudienceType): Promise<number> {
+export interface AudienceCount {
+  total: number;
+  withEmail: number;
+  withPush: number;
+}
+
+/**
+ * Qui est réellement joignable, et par quel canal.
+ *
+ * Afficher le total seul induisait en erreur : un commerçant voyait « 12
+ * clients » et découvrait après l'envoi qu'aucun n'avait activé les
+ * notifications.
+ */
+export async function countAudienceAction(audienceType: AudienceType): Promise<AudienceCount> {
   const session = await requireMerchant();
   const audience = await getAudience(session.businessId, audienceType);
-  return audience.length;
+
+  if (audience.length === 0) return { total: 0, withEmail: 0, withPush: 0 };
+
+  const admin = createSupabaseAdminClient();
+  const { data: subscriptions } = await admin
+    .from("push_subscriptions")
+    .select("customer_id")
+    .in(
+      "customer_id",
+      audience.map((customer) => customer.id),
+    )
+    .returns<{ customer_id: string }[]>();
+
+  // Un client peut avoir plusieurs appareils : on compte les personnes.
+  const subscribers = new Set((subscriptions ?? []).map((row) => row.customer_id));
+
+  return {
+    total: audience.length,
+    withEmail: audience.filter((customer) => customer.email).length,
+    withPush: subscribers.size,
+  };
 }
 
 /**
@@ -177,8 +209,42 @@ export async function sendCampaignAction(
   revalidatePath("/dashboard/campaigns");
 
   if (result.sent === 0) {
-    return { error: "Aucun message n'a pu être envoyé. Vérifiez la configuration email." };
+    return { error: explainEmptyDelivery(result, channel) };
   }
 
-  return { success: `Campagne envoyée à ${result.sent} client(s).`, recipients: result.sent };
+  const detail =
+    channel === "both"
+      ? ` (${result.emailSent} par email, ${result.pushSent} en notification)`
+      : "";
+  return {
+    success: `Campagne envoyée à ${result.sent} client(s)${detail}.`,
+    recipients: result.sent,
+  };
+}
+
+/**
+ * Dit ce qui a réellement manqué.
+ *
+ * Un message d'erreur qui parle d'email alors qu'on testait les notifications
+ * envoie le commerçant chercher au mauvais endroit.
+ */
+function explainEmptyDelivery(result: DeliveryResult, channel: CampaignChannel): string {
+  if (channel === "push") {
+    if (!result.pushConfigured) {
+      return "Les notifications ne sont pas encore configurées sur ce site.";
+    }
+    return "Aucun de vos clients n'a activé les notifications sur son téléphone. Elles s'activent depuis leur carte de fidélité.";
+  }
+
+  if (channel === "email") {
+    if (result.withEmail === 0) {
+      return "Aucun client de cette audience n'a renseigné d'adresse email.";
+    }
+    return "Aucun email n'a pu être envoyé. Vérifiez la configuration email dans Réglages.";
+  }
+
+  if (result.withEmail === 0 && result.pushSent === 0) {
+    return "Personne n'est joignable dans cette audience : aucune adresse email, et aucune notification activée.";
+  }
+  return "Aucun message n'a pu être envoyé, ni par email ni en notification.";
 }

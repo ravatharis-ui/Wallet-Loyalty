@@ -7,6 +7,7 @@ import {
   sendCampaignAction,
   sendTestCampaignAction,
   uploadCampaignImageAction,
+  type AudienceCount,
   type CampaignState,
 } from "@/actions/campaigns";
 import type { AudienceType, CampaignChannel } from "@/lib/db.types";
@@ -71,7 +72,7 @@ function CampaignFormInstance({
   const [open, setOpen] = useState(false);
   const [audience, setAudience] = useState<AudienceType>("all");
   const [channel, setChannel] = useState<CampaignChannel>("email");
-  const [recipients, setRecipients] = useState<number | null>(null);
+  const [count, setCount] = useState<AudienceCount | null>(null);
   const [imageUrl, setImageUrl] = useState("");
   const [notice, setNotice] = useState<string | null>(null);
   const [counting, startCount] = useTransition();
@@ -80,10 +81,23 @@ function CampaignFormInstance({
 
   useEffect(() => {
     if (!open) return;
-    startCount(async () => setRecipients(await countAudienceAction(audience)));
+    startCount(async () => setCount(await countAudienceAction(audience)));
   }, [audience, open]);
 
   const withEmail = channel === "email" || channel === "both";
+
+  // Ce que le canal choisi permet réellement d'atteindre : c'est ce chiffre qui
+  // compte, pas la taille de l'audience.
+  const reachable =
+    count === null
+      ? 0
+      : channel === "email"
+        ? count.withEmail
+        : channel === "push"
+          ? count.withPush
+          : Math.max(count.withEmail, count.withPush);
+  const channelLabel =
+    channel === "email" ? "email" : channel === "push" ? "notification" : "email ou notification";
 
   function handleImage(file: File) {
     startBusy(async () => {
@@ -264,17 +278,28 @@ function CampaignFormInstance({
           </div>
         </div>
 
-        <Alert>
-          {counting || recipients === null
-            ? "Calcul du nombre de destinataires…"
-            : `${recipients} client${recipients > 1 ? "s" : ""} dans cette audience.`}
+        <Alert variant={reachable === 0 && count !== null ? "error" : "info"}>
+          {counting || count === null ? (
+            "Calcul du nombre de destinataires…"
+          ) : (
+            <>
+              {count.total} client{count.total > 1 ? "s" : ""} dans cette audience ·{" "}
+              <strong className="font-semibold">
+                {reachable} joignable{reachable > 1 ? "s" : ""}
+              </strong>{" "}
+              par {channelLabel}.
+              {channel !== "email" && count.withPush === 0
+                ? " Vos clients activent les notifications depuis leur carte de fidélité."
+                : ""}
+            </>
+          )}
         </Alert>
 
         {notice ? <Alert>{notice}</Alert> : null}
         {state.error ? <Alert variant="error">{state.error}</Alert> : null}
 
         <div className="flex flex-wrap gap-2">
-          <SubmitButton size="lg" pendingText="Envoi…" disabled={recipients === 0}>
+          <SubmitButton size="lg" pendingText="Envoi…" disabled={reachable === 0}>
             <Send className="h-4 w-4" aria-hidden />
             Envoyer
           </SubmitButton>
