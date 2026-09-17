@@ -51,6 +51,8 @@ pnpm dev
    - `20260107000000_reward_tiers.sql` — catalogue de paliers, `redeem_reward`,
      et `add_visit` qui ne consomme plus les points
    - `20260108000000_push_notifications.sql` — abonnements push et canal `push`
+   - `20260109000000_campaigns.sql` — canal, objet, image, envoi programmé et
+     nouvelles audiences des campagnes
 3. Dans **Authentication → Providers → Email**, activer Email/Password.
    Pour le MVP, désactiver « Confirm email » afin que l'inscription commerçant
    ouvre directement le dashboard (sinon le commerçant doit confirmer son email

@@ -143,8 +143,43 @@ export const planSchema = z.enum(["monthly", "yearly"]);
 
 export const campaignSchema = z.object({
   name: trimmed(2, 80),
+  /** Objet de l'email. Vide, l'envoi retombe sur le nom de la campagne. */
+  subject: z
+    .string()
+    .trim()
+    .max(120)
+    .optional()
+    .transform((value) => (value && value.length > 0 ? value : null)),
   message: trimmed(5, 2000),
-  audienceType: z.enum(["all", "inactive_30_days", "reward_available"]),
+  channel: z.enum(["email", "push", "both"]).default("email"),
+  audienceType: z.enum([
+    "all",
+    "inactive_30_days",
+    "reward_available",
+    "new_this_month",
+    "best_customers",
+  ]),
+  imageUrl: z
+    .string()
+    .trim()
+    .url()
+    .max(500)
+    .optional()
+    .or(z.literal(""))
+    .transform((value) => (value && value.length > 0 ? value : null)),
+  /**
+   * Date d'envoi souhaitée. Vide, la campagne part immédiatement. Une date
+   * passée est refusée : elle partirait aussitôt sans que ce soit l'intention.
+   */
+  scheduledAt: z
+    .string()
+    .trim()
+    .optional()
+    .transform((value) => (value && value.length > 0 ? value : null))
+    .refine(
+      (value) => value === null || !Number.isNaN(new Date(value).getTime()),
+      "Date d'envoi invalide.",
+    ),
 });
 
 export type JoinInput = z.infer<typeof joinSchema>;

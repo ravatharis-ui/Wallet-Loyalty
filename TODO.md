@@ -137,6 +137,10 @@ Les six migrations du dossier `supabase/migrations/` sont en place sur le projet
 de production. Toute nouvelle migration s'ajoute ici tant qu'elle n'est pas
 exécutée dans le SQL Editor.
 
+- [ ] **Migration `20260109000000_campaigns.sql`** : canal (email / push / les
+      deux), objet, image, envoi programmé, et deux audiences de plus. Sans
+      elle, la création d'une campagne échoue.
+
 - [ ] **Migration `20260108000000_push_notifications.sql`** : abonnements push
       et canal `push` sur les messages. Sans elle, l'activation des
       notifications échoue côté client — le reste continue de fonctionner.

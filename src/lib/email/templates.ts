@@ -162,9 +162,25 @@ Présentez votre carte lors de votre prochaine visite : ${ctx.cardUrl}`;
   };
 }
 
-export function campaignEmail(ctx: EmailContext & { message: string }): RenderedEmail {
-  const subject = `Un message de ${ctx.businessName}`;
-  const paragraphs = ctx.message
+/**
+ * Remplace les variables du commerçant par les valeurs du destinataire.
+ *
+ * Volontairement limité à une seule variable : un commerçant ne tiendra pas
+ * une syntaxe de gabarit, et « Bonjour {prenom} » couvre l'essentiel du gain.
+ */
+export function personalise(message: string, firstName: string): string {
+  return message.replace(/\{prenom\}/gi, firstName);
+}
+
+export function campaignEmail(
+  ctx: EmailContext & { message: string; subject?: string | null; imageUrl?: string | null },
+): RenderedEmail {
+  const message = personalise(ctx.message, ctx.firstName);
+  const subject = ctx.subject?.trim()
+    ? personalise(ctx.subject.trim(), ctx.firstName)
+    : `Un message de ${ctx.businessName}`;
+
+  const paragraphs = message
     .split(/\n{2,}/)
     .map(
       (block) =>
@@ -172,12 +188,22 @@ export function campaignEmail(ctx: EmailContext & { message: string }): Rendered
     )
     .join("");
 
+  // L'image est placée avant le texte : dans un email, c'est elle qu'on voit
+  // en premier, et elle doit rester lisible sur un écran de téléphone.
+  const image = ctx.imageUrl
+    ? `<img src="${escapeHtml(ctx.imageUrl)}" alt="" style="display:block;width:100%;max-width:456px;height:auto;border-radius:12px;margin:0 0 20px;" />`
+    : "";
+
+  // Aucun salut imposé : le commerçant écrit son message comme il l'entend, et
+  // `{prenom}` lui permet de saluer lui-même. Le gabarit en ajoutait un, ce qui
+  // donnait « Bonjour Léa, » deux fois de suite dès qu'il en écrivait un.
+  const heading = ctx.subject?.trim()
+    ? `<h1 style="margin:0 0 16px;font-size:22px;">${escapeHtml(subject)}</h1>`
+    : "";
+
   return {
     subject,
-    text: `Bonjour ${ctx.firstName},\n\n${ctx.message}\n\nVotre carte : ${ctx.cardUrl}`,
-    html: layout(
-      `<h1 style="margin:0 0 16px;font-size:22px;">Bonjour ${escapeHtml(ctx.firstName)},</h1>${paragraphs}`,
-      ctx,
-    ),
+    text: `${message}\n\nVotre carte : ${ctx.cardUrl}`,
+    html: layout(`${image}${heading}${paragraphs}`, ctx),
   };
 }

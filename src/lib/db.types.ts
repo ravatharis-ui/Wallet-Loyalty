@@ -16,7 +16,14 @@ export type MessageType =
   | "campaign";
 export type MessageChannel = "email" | "sms" | "push";
 export type MessageStatus = "pending" | "sent" | "failed" | "skipped";
-export type AudienceType = "all" | "inactive_30_days" | "reward_available";
+export type AudienceType =
+  | "all"
+  | "inactive_30_days"
+  | "reward_available"
+  | "new_this_month"
+  | "best_customers";
+export type CampaignChannel = "email" | "push" | "both";
+export type CampaignStatus = "draft" | "scheduled" | "sent";
 export type SubscriptionStatus =
   | "none"
   | "trialing"
@@ -151,9 +158,15 @@ export interface Campaign {
   id: string;
   business_id: string;
   name: string;
+  /** Objet de l'email. Vide, on retombe sur le nom de la campagne. */
+  subject: string | null;
   message: string;
+  image_url: string | null;
+  channel: CampaignChannel;
   audience_type: AudienceType;
+  status: CampaignStatus;
   recipients: number;
+  scheduled_at: string | null;
   created_at: string;
   sent_at: string | null;
 }

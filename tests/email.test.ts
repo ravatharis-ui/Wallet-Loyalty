@@ -6,6 +6,7 @@ import {
   campaignEmail,
   welcomeEmail,
   cardRecoveryEmail,
+  personalise,
 } from "@/lib/email/templates";
 import { buildFrom } from "@/lib/email/send";
 
@@ -119,5 +120,68 @@ describe("remise de la carte au client", () => {
     const hostile = { ...ctx, businessName: "<script>alert(1)</script>" };
     expect(welcomeEmail({ ...hostile, rewardLine: null }).html).not.toContain("<script>");
     expect(cardRecoveryEmail(hostile).html).not.toContain("<script>");
+  });
+});
+
+describe("campagne personnalisée", () => {
+  const ctx = {
+    businessName: "HERA",
+    firstName: "Léa",
+    cardUrl: "https://fidelia.re/card/abc",
+  };
+
+  it("remplace {prenom} dans le message et dans l'objet", () => {
+    const rendered = campaignEmail({
+      ...ctx,
+      subject: "{prenom}, une surprise vous attend",
+      message: "Bonjour {prenom}, venez découvrir la collection.",
+    });
+    expect(rendered.subject).toBe("Léa, une surprise vous attend");
+    expect(rendered.html).toContain("Bonjour Léa");
+    expect(rendered.text).toContain("Bonjour Léa");
+    expect(rendered.html).not.toContain("{prenom}");
+  });
+
+  it("n'ajoute pas de salut par-dessus celui du commerçant", () => {
+    // Le gabarit imposait « Bonjour {prénom}, » : un commerçant qui écrivait le
+    // sien obtenait la même phrase deux fois.
+    const rendered = campaignEmail({
+      ...ctx,
+      message: "Bonjour {prenom}, venez voir la collection.",
+    });
+    const occurrences = rendered.html.split("Bonjour Léa").length - 1;
+    expect(occurrences).toBe(1);
+  });
+
+  it("accepte la variable quelle que soit la casse", () => {
+    expect(personalise("Bonjour {PRENOM} !", "Marc")).toBe("Bonjour Marc !");
+    expect(personalise("Bonjour {Prenom}", "Marc")).toBe("Bonjour Marc");
+  });
+
+  it("retombe sur un objet neutre quand le commerçant n'en met pas", () => {
+    const rendered = campaignEmail({ ...ctx, message: "Un mot rapide." });
+    expect(rendered.subject).toBe("Un message de HERA");
+  });
+
+  it("insère la photo avant le texte quand il y en a une", () => {
+    const rendered = campaignEmail({
+      ...ctx,
+      message: "Nouvelle collection.",
+      imageUrl: "https://example.com/photo.jpg",
+    });
+    const imageAt = rendered.html.indexOf("photo.jpg");
+    const textAt = rendered.html.indexOf("Nouvelle collection.");
+    expect(imageAt).toBeGreaterThan(-1);
+    expect(imageAt).toBeLessThan(textAt);
+  });
+
+  it("échappe une adresse d'image malveillante", () => {
+    const rendered = campaignEmail({
+      ...ctx,
+      message: "Coucou.",
+      imageUrl: 'https://x.test/a.jpg" onerror="alert(1)',
+    });
+    expect(rendered.html).not.toContain('onerror="alert(1)"');
+    expect(rendered.html).toContain("&quot;");
   });
 });
