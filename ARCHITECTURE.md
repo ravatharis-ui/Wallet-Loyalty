@@ -119,6 +119,31 @@ Un utilisateur = un commerce au MVP, mais la table permet d'en ajouter d'autres 
 - Le webhook Stripe vérifie la signature; la route cron exige `Authorization: Bearer $CRON_SECRET`.
 - Limitation de débit simple en mémoire sur l'inscription client publique.
 
+## Système visuel
+
+Tout est défini une seule fois dans `@theme` (`src/app/globals.css`). Aucune
+couleur brute de Tailwind (`bg-red-500`, `text-gray-600`) ne doit réapparaître
+dans une page : si une teinte manque, on ajoute un jeton.
+
+- **Neutres chauds** — fond papier `#fbfaf7`, encre `#1a1815`. Jamais de blanc
+  pur en fond ni de noir pur en texte : les deux durcissent l'écran.
+- **Un seul accent**, vert profond `#2f5d4e`, qui sert aussi de couleur de
+  succès. L'ocre `--color-reward` est réservé à l'objet « tampon / récompense ».
+  Le châssis reste discret parce que chaque commerçant choisit sa propre couleur
+  de carte : c'est elle qui doit ressortir.
+- **Typographie** — Manrope pour l'interface (chiffres tabulaires activés sur
+  `body`, indispensable pour des compteurs), Instrument Serif pour les grands
+  titres et les prénoms sur les cartes. Chargées via `next/font` (`src/lib/fonts.ts`),
+  donc auto-hébergées : aucun appel à Google au chargement de la page.
+- **Ombres teintées** à l'encre chaude, jamais du noir pur, et une seule source
+  de lumière (en haut à gauche) sur toutes les surfaces colorées.
+- **Mouvement** — entrées en cascade à l'arrivée d'une page, jamais de boucle.
+  Tout est neutralisé sous `prefers-reduced-motion`.
+
+`LoyaltyCardPreview` rend la carte du client. Elle est réutilisée sur l'accueil,
+la démonstration et les pages de compte pour que ce qu'on montre avant la vente
+soit exactement ce qui est livré après.
+
 ## Évolutions préparées (hors MVP)
 
 - Apple/Google Wallet : la carte est déjà identifiée par un token stable, il suffira

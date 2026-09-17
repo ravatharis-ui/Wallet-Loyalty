@@ -26,7 +26,7 @@ export default async function LoyaltyPage() {
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="text-2xl font-bold">Programme de fidélité</h1>
+        <h1 className="text-3xl font-semibold tracking-[-0.03em]">Programme de fidélité</h1>
         <p className="text-sm text-muted-foreground">
           Une visite = un nombre de points. Au seuil atteint, le client gagne sa récompense.
         </p>

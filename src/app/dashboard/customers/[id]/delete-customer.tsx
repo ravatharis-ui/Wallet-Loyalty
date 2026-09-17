@@ -16,7 +16,7 @@ export function DeleteCustomer({
   const [confirming, setConfirming] = useState(false);
 
   return (
-    <Card className="border-red-200">
+    <Card className="border-danger/25">
       <p className="font-semibold text-danger">Supprimer ce client</p>
       <p className="mt-1 text-sm text-muted-foreground">
         Supprime définitivement {firstName}, ses visites, ses récompenses et son historique

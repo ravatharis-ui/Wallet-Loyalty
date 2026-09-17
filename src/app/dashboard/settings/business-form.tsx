@@ -85,7 +85,7 @@ export function BusinessForm({ business }: { business: Business }) {
             aria-label={`Aperçu de la carte de ${name}`}
           >
             <p className="text-sm opacity-80">{name || "Votre commerce"}</p>
-            <p className="mt-1 text-xl font-bold">Thomas</p>
+            <p className="mt-1 text-xl font-semibold tracking-[-0.02em]">Thomas</p>
             <div className="mt-4 flex gap-1.5">
               {Array.from({ length: 10 }).map((_, index) => (
                 <span

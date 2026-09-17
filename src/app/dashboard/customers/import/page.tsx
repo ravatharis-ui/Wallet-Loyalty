@@ -17,7 +17,7 @@ export default async function ImportPage() {
       </Link>
 
       <header>
-        <h1 className="text-2xl font-bold">Importer mes clients</h1>
+        <h1 className="text-3xl font-semibold tracking-[-0.03em]">Importer mes clients</h1>
         <p className="text-sm text-muted-foreground">
           Reprenez votre fichier existant — carnet, tableur, ancien logiciel — avec les points déjà
           acquis par vos clients.

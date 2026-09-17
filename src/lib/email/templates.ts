@@ -12,17 +12,17 @@ export interface EmailContext {
 function layout(content: string, ctx: EmailContext): string {
   return `<!doctype html>
 <html lang="fr">
-  <body style="margin:0;padding:24px;background:#f4f5f7;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;color:#0b0f19;">
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;margin:0 auto;background:#ffffff;border-radius:16px;padding:32px;">
+  <body style="margin:0;padding:24px;background:#f1eee7;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;color:#1a1815;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;margin:0 auto;background:#ffffff;border-radius:20px;padding:32px;">
       <tr><td>
-        <p style="margin:0 0 24px;font-size:14px;color:#5b6475;">${escapeHtml(ctx.businessName)}</p>
+        <p style="margin:0 0 24px;font-size:12px;letter-spacing:1.4px;text-transform:uppercase;font-weight:600;color:#6b6459;">${escapeHtml(ctx.businessName)}</p>
         ${content}
         <p style="margin:32px 0 0;">
-          <a href="${ctx.cardUrl}" style="display:inline-block;background:#111827;color:#ffffff;text-decoration:none;padding:14px 24px;border-radius:12px;font-weight:600;">
+          <a href="${ctx.cardUrl}" style="display:inline-block;background:#1a1815;color:#ffffff;text-decoration:none;padding:14px 26px;border-radius:10px;font-weight:600;">
             Voir ma carte de fidélité
           </a>
         </p>
-        <p style="margin:24px 0 0;font-size:12px;color:#8a93a5;">
+        <p style="margin:28px 0 0;font-size:12px;line-height:1.6;color:#8b8478;">
           Vous recevez cet email car vous êtes membre du programme de fidélité de
           ${escapeHtml(ctx.businessName)}. Pour ne plus recevoir ces messages ou supprimer vos
           données, répondez à cet email.

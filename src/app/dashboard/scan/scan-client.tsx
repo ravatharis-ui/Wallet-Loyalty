@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import dynamic from "next/dynamic";
-import { Camera, X } from "lucide-react";
+import { Camera, X, Check, Gift, Users } from "lucide-react";
 import {
   addVisitAction,
   lookupCustomerAction,
@@ -139,7 +139,7 @@ export function ScanClient() {
       {customer ? (
         <Card className="space-y-4">
           <div>
-            <p className="text-2xl font-bold">{customer.firstName}</p>
+            <p className="text-2xl font-semibold tracking-[-0.03em]">{customer.firstName}</p>
             <p className="text-sm text-muted-foreground">
               {customer.totalVisits} visite{customer.totalVisits > 1 ? "s" : ""} · Dernière visite :{" "}
               {formatRelativeDays(customer.lastVisitAt)}
@@ -177,8 +177,14 @@ export function ScanClient() {
 
           {customer.availableRewards > 0 ? (
             <Alert variant="success">
-              🎁 {customer.availableRewards} récompense{customer.availableRewards > 1 ? "s" : ""}{" "}
-              disponible{customer.availableRewards > 1 ? "s" : ""} — {customer.rewardName}
+              <span className="flex items-start gap-2">
+                <Gift className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+                <span>
+                  {customer.availableRewards} récompense
+                  {customer.availableRewards > 1 ? "s" : ""} disponible
+                  {customer.availableRewards > 1 ? "s" : ""} — {customer.rewardName}
+                </span>
+              </span>
             </Alert>
           ) : null}
 
@@ -187,19 +193,24 @@ export function ScanClient() {
           ) : null}
 
           {visit?.result && !visit.duplicate ? (
-            <div className="animate-pop rounded-xl bg-muted p-4 text-center">
-              <p className="text-3xl font-bold">+{visit.result.pointsAdded} ⭐</p>
-              <p className="mt-1 text-sm text-muted-foreground">
+            <div className="animate-pop rounded-xl border border-accent/15 bg-accent-soft p-5 text-center">
+              <p className="flex items-center justify-center gap-2 text-4xl font-semibold tracking-[-0.04em] text-accent">
+                <Check className="h-7 w-7" aria-hidden strokeWidth={2.5} />+
+                {visit.result.pointsAdded}
+              </p>
+              <p className="mt-1.5 text-sm text-muted-foreground">
                 {visit.result.currentPoints} / {visit.result.rewardThreshold} points
               </p>
               {visit.result.rewardsCreated > 0 ? (
-                <p className="mt-2 font-semibold text-green-700">
-                  🎉 Nouvelle récompense disponible
+                <p className="mt-3 flex items-center justify-center gap-1.5 font-semibold text-accent">
+                  <Gift className="h-4 w-4" aria-hidden />
+                  Nouvelle récompense disponible
                 </p>
               ) : null}
               {visit.result.referralRewarded ? (
-                <p className="mt-2 text-sm font-medium text-green-700">
-                  🤝 Parrainage validé — le parrain a reçu son bonus
+                <p className="mt-3 flex items-center justify-center gap-1.5 text-sm font-medium text-accent">
+                  <Users className="h-4 w-4" aria-hidden />
+                  Parrainage validé — le parrain a reçu son bonus
                 </p>
               ) : null}
               {visit.result.referralNote === "min_amount" ? (

@@ -5,7 +5,7 @@ export const metadata = { title: "Conditions d'utilisation" };
 export default function TermsPage() {
   return (
     <>
-      <h1 className="text-2xl font-bold">Conditions d&apos;utilisation</h1>
+      <h1 className="text-3xl font-semibold tracking-[-0.03em]">Conditions d&apos;utilisation</h1>
 
       <h2>1. Objet</h2>
       <p>

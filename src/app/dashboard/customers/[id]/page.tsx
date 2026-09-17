@@ -61,7 +61,7 @@ export default async function CustomerPage({ params }: { params: Promise<{ id: s
       </Link>
 
       <header>
-        <h1 className="text-2xl font-bold">{customer.first_name}</h1>
+        <h1 className="text-3xl font-semibold tracking-[-0.03em]">{customer.first_name}</h1>
         <p className="text-sm text-muted-foreground">
           {customer.phone}
           {customer.email ? ` · ${customer.email}` : " · pas d'email"}
@@ -71,14 +71,14 @@ export default async function CustomerPage({ params }: { params: Promise<{ id: s
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <Card>
           <p className="text-sm text-muted-foreground">Points</p>
-          <p className="text-2xl font-bold">
+          <p className="text-2xl font-semibold tracking-[-0.03em]">
             {customer.current_points}
             <span className="text-base font-normal text-muted-foreground"> / {threshold}</span>
           </p>
         </Card>
         <Card>
           <p className="text-sm text-muted-foreground">Visites</p>
-          <p className="text-2xl font-bold">{customer.total_visits}</p>
+          <p className="text-2xl font-semibold tracking-[-0.03em]">{customer.total_visits}</p>
         </Card>
         <Card>
           <p className="text-sm text-muted-foreground">Dernière visite</p>
@@ -86,7 +86,7 @@ export default async function CustomerPage({ params }: { params: Promise<{ id: s
         </Card>
         <Card>
           <p className="text-sm text-muted-foreground">Récompenses dispo</p>
-          <p className="text-2xl font-bold">{availableRewards.length}</p>
+          <p className="text-2xl font-semibold tracking-[-0.03em]">{availableRewards.length}</p>
         </Card>
       </div>
 

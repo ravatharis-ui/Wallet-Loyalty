@@ -7,9 +7,8 @@ import { Alert } from "@/components/ui/alert";
 import { AddToHomeScreen } from "@/components/add-to-home-screen";
 import { ReferralShare } from "@/components/referral-share";
 import { appUrl } from "@/lib/env";
-import { formatDate } from "@/lib/utils";
+import { formatDate, formatEuros } from "@/lib/utils";
 import { readableTextColor, safeCardColor } from "@/lib/colors";
-import { formatEuros } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -49,111 +48,131 @@ export default async function CardPage({
     <main className="mx-auto flex min-h-dvh max-w-md flex-col px-5 py-8">
       {isNew ? (
         <Alert variant="success">
-          Votre carte est prête ! Ajoutez-la à votre écran d&apos;accueil.
+          Votre carte est prête. Ajoutez-la à votre écran d&apos;accueil pour la retrouver
+          facilement.
         </Alert>
       ) : null}
       {existing ? <Alert>Vous aviez déjà une carte chez {business.name}. La voici.</Alert> : null}
 
       <section
-        className="mt-4 rounded-2xl p-6 shadow-sm"
+        className="grain animate-rise relative mt-4 overflow-hidden rounded-2xl p-6 shadow-lg"
         style={{ background: cardColor, color: cardText }}
       >
-        <div className="flex items-center gap-3">
-          {business.logo_url ? (
-            // eslint-disable-next-line @next/next/no-img-element -- image externe hébergée par Supabase
-            <img
-              src={business.logo_url}
-              alt=""
-              className="h-12 w-12 rounded-xl bg-white/90 object-cover"
-            />
-          ) : null}
-          <div>
-            <p className="text-sm opacity-80">{business.name}</p>
-            <h1 className="text-xl font-bold">{program?.name ?? "Programme fidélité"}</h1>
-          </div>
-        </div>
-        <p className="mt-4 text-2xl font-semibold">{customer.first_name}</p>
+        {/* Source de lumière unique, en haut à gauche, comme sur tous les aperçus. */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -left-20 -top-28 h-72 w-72 rounded-full opacity-20"
+          style={{ background: `radial-gradient(circle, ${cardText} 0%, transparent 70%)` }}
+        />
 
-        <div className="mt-6">
-          <p className="text-sm opacity-80">
-            {isAmountMode
-              ? `${customer.current_points} / ${threshold} points`
-              : `${points} / ${threshold} visites`}
-          </p>
-          {isAmountMode ? (
-            <div
-              className="mt-3 h-4 w-full overflow-hidden rounded-full"
-              style={{ background: `${cardText}33` }}
-              role="img"
-              aria-label={`${customer.current_points} points sur ${threshold}`}
-            >
-              <div
-                className="h-full rounded-full"
-                style={{
-                  width: `${Math.min(100, (customer.current_points / threshold) * 100)}%`,
-                  background: cardText,
-                }}
+        <div className="relative">
+          <div className="flex items-center gap-3">
+            {business.logo_url ? (
+              // eslint-disable-next-line @next/next/no-img-element -- image externe hébergée par Supabase
+              <img
+                src={business.logo_url}
+                alt=""
+                className="h-12 w-12 rounded-xl bg-white/90 object-cover"
               />
+            ) : null}
+            <div className="min-w-0">
+              <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.14em] opacity-70">
+                {business.name}
+              </p>
+              <h1 className="truncate text-lg font-semibold tracking-[-0.015em]">
+                {program?.name ?? "Programme fidélité"}
+              </h1>
             </div>
-          ) : (
-            <div
-              className="mt-3 flex flex-wrap gap-2"
-              role="img"
-              aria-label={`${points} visites sur ${threshold}`}
-            >
-              {Array.from({ length: threshold }).map((_, index) => (
-                <span
-                  key={index}
-                  className="h-5 w-5 rounded-full"
+          </div>
+
+          <p className="mt-5 font-display text-4xl leading-none">{customer.first_name}</p>
+
+          <div className="mt-7">
+            <p className="text-sm opacity-75">
+              {isAmountMode
+                ? `${customer.current_points} / ${threshold} points`
+                : `${points} / ${threshold} visites`}
+            </p>
+            {isAmountMode ? (
+              <div
+                className="mt-3 h-3 w-full overflow-hidden rounded-full"
+                style={{ background: `${cardText}2e` }}
+                role="img"
+                aria-label={`${customer.current_points} points sur ${threshold}`}
+              >
+                <div
+                  className="h-full rounded-full transition-[width] duration-500 ease-[var(--ease-out-soft)]"
                   style={{
-                    background: index < points ? cardText : "transparent",
-                    border: `2px solid ${cardText}`,
-                    opacity: index < points ? 1 : 0.4,
+                    width: `${Math.min(100, (customer.current_points / threshold) * 100)}%`,
+                    background: cardText,
                   }}
                 />
-              ))}
+              </div>
+            ) : (
+              <div
+                className="mt-3 flex flex-wrap gap-2"
+                role="img"
+                aria-label={`${points} visites sur ${threshold}`}
+              >
+                {Array.from({ length: threshold }).map((_, index) => (
+                  <span
+                    key={index}
+                    className="h-5 w-5 rounded-full"
+                    style={{
+                      background: index < points ? cardText : "transparent",
+                      border: `2px solid ${cardText}`,
+                      opacity: index < points ? 1 : 0.35,
+                    }}
+                  />
+                ))}
+              </div>
+            )}
+            <p className="mt-5 font-medium">
+              {hasReward
+                ? "Votre récompense vous attend"
+                : progressLabel(customer.current_points, rules)}
+            </p>
+            {!hasReward && program ? (
+              // Sur fond coloré, la teinte doit venir de l'encre de la carte,
+              // jamais d'un gris de l'interface.
+              <p className="text-sm opacity-75">Objectif : {program.reward_name}</p>
+            ) : null}
+          </div>
+
+          {hasReward ? (
+            <div
+              className="mt-6 rounded-xl p-4"
+              style={{ background: `${cardText}1f`, border: `1px solid ${cardText}3d` }}
+            >
+              <p className="flex items-center gap-2 font-semibold">
+                <Gift className="h-5 w-5" aria-hidden />
+                {availableRewards.length > 1
+                  ? `${availableRewards.length} récompenses disponibles`
+                  : "Récompense disponible"}
+              </p>
+              <p className="mt-1 text-sm opacity-90">
+                {availableRewards[0].reward_name} — présentez cette carte en caisse.
+              </p>
             </div>
-          )}
-          <p className="mt-4 font-medium">
-            {hasReward
-              ? "Votre récompense vous attend !"
-              : progressLabel(customer.current_points, rules)}
-          </p>
-          {!hasReward && program ? (
-            <p className="text-sm text-muted-foreground">Objectif : {program.reward_name}</p>
           ) : null}
         </div>
-
-        {hasReward ? (
-          <div className="mt-6 rounded-xl border border-green-200 bg-green-50 p-4 text-green-900">
-            <p className="flex items-center gap-2 font-semibold">
-              <Gift className="h-5 w-5" aria-hidden />
-              {availableRewards.length > 1
-                ? `${availableRewards.length} récompenses disponibles`
-                : "Récompense disponible"}
-            </p>
-            <p className="mt-1 text-sm">
-              {availableRewards[0].reward_name} — présentez cette carte en caisse.
-            </p>
-          </div>
-        ) : null}
       </section>
 
-      <section className="mt-6 flex flex-col items-center rounded-2xl border border-border p-6">
-        <p className="text-sm font-medium">Votre QR code personnel</p>
-        <p className="mb-4 text-xs text-muted-foreground">
+      <section className="mt-6 flex flex-col items-center rounded-card border border-border bg-surface p-6 shadow-xs">
+        <p className="text-sm font-semibold">Votre QR code personnel</p>
+        <p className="mb-5 text-xs text-muted-foreground">
           À présenter au commerçant à chaque visite.
         </p>
         <QrCode value={customer.card_token} size={220} alt="QR code de votre carte de fidélité" />
-        <p className="mt-4 text-xs text-muted-foreground">
+        <p className="mt-5 text-xs text-muted-foreground">
           Client depuis le {formatDate(customer.created_at)}
         </p>
       </section>
 
       {program && program.referral_points > 0 ? (
-        <section className="mt-6 rounded-2xl border border-border p-6">
-          <p className="text-sm font-medium">Parrainez vos proches</p>
-          <p className="mt-1 text-sm text-muted-foreground">
+        <section className="mt-6 rounded-card border border-border bg-surface p-6 shadow-xs">
+          <p className="text-sm font-semibold">Parrainez vos proches</p>
+          <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
             Ils gagnent {program.referral_points} points d&apos;avance, et vous aussi dès leur
             passage en boutique
             {program.mode === "amount" && program.referral_min_amount_cents > 0
@@ -171,9 +190,9 @@ export default async function CardPage({
 
       <AddToHomeScreen />
 
-      <p className="mt-8 text-center text-xs text-muted-foreground">
+      <p className="mt-8 text-center text-xs leading-relaxed text-muted-foreground">
         Lien perdu ?{" "}
-        <a href={`/join/${business.slug}/retrouver`} className="underline">
+        <a href={`/join/${business.slug}/retrouver`} className="underline underline-offset-2">
           Recevez-le à nouveau par email
         </a>
         . Pour supprimer vos données, contactez {business.name}

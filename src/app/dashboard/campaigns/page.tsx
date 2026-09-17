@@ -30,7 +30,7 @@ export default async function CampaignsPage() {
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="text-2xl font-bold">Campagnes</h1>
+        <h1 className="text-3xl font-semibold tracking-[-0.03em]">Campagnes</h1>
         <p className="text-sm text-muted-foreground">
           Envoyez un email à vos clients. Réservé aux clients ayant renseigné leur email.
         </p>

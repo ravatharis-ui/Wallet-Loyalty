@@ -1,24 +1,63 @@
 @import "tailwindcss";
 
+/* --------------------------------------------------------------------------
+   Fidelia — fondation visuelle
+   Neutres chauds (papier, encre) + un seul accent vert profond. L'ocre est
+   strictement réservé à l'objet « tampon / récompense », qui est le cœur du
+   produit. Les commerçants choisissant leur propre couleur de carte, le
+   châssis de l'application reste volontairement discret.
+   -------------------------------------------------------------------------- */
+
 @theme {
-  --color-background: #ffffff;
-  --color-foreground: #0b0f19;
-  --color-muted: #f4f5f7;
-  --color-muted-foreground: #5b6475;
-  --color-border: #e5e7eb;
-  --color-primary: #111827;
-  --color-primary-foreground: #ffffff;
-  --color-accent: #4f46e5;
+  --color-background: #fbfaf7;
+  --color-surface: #ffffff;
+  --color-foreground: #1a1815;
+  --color-muted: #f1eee7;
+  --color-muted-foreground: #6b6459;
+  --color-border: #e6e1d7;
+  --color-border-strong: #d5cec0;
+
+  --color-primary: #1a1815;
+  --color-primary-foreground: #fbfaf7;
+
+  --color-accent: #2f5d4e;
   --color-accent-foreground: #ffffff;
-  --color-success: #16a34a;
-  --color-danger: #dc2626;
+  --color-accent-soft: #e7efea;
+
+  --color-reward: #a8762f;
+  --color-reward-soft: #f8f0e2;
+
+  --color-success: #2f5d4e;
+  --color-success-soft: #e7efea;
+  --color-danger: #a3392e;
+  --color-danger-soft: #fbece9;
+  --color-warning: #8a6420;
+  --color-warning-soft: #f8f0e2;
+
   --font-sans:
-    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --radius-card: 1rem;
+    var(--font-sans-loaded), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  --font-display: var(--font-display), Georgia, "Times New Roman", serif;
+
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.25rem;
+  --radius-2xl: 1.5rem;
+  --radius-card: 1.25rem;
+
+  /* Ombres teintées à l'encre chaude, jamais du noir pur. */
+  --shadow-xs: 0 1px 2px rgba(26, 24, 21, 0.05);
+  --shadow-sm: 0 1px 2px rgba(26, 24, 21, 0.04), 0 2px 8px -3px rgba(26, 24, 21, 0.07);
+  --shadow-md: 0 2px 4px rgba(26, 24, 21, 0.03), 0 10px 26px -8px rgba(26, 24, 21, 0.11);
+  --shadow-lg: 0 4px 8px rgba(26, 24, 21, 0.03), 0 26px 50px -14px rgba(26, 24, 21, 0.16);
+
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 html {
   -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
 }
 
 body {
@@ -26,6 +65,43 @@ body {
   color: var(--color-foreground);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Les chiffres d'une interface de comptage doivent s'aligner en colonne. */
+body {
+  font-variant-numeric: tabular-nums;
+}
+
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+::selection {
+  background: var(--color-accent);
+  color: var(--color-accent-foreground);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* Grain très léger : casse la platitude du papier blanc sans se voir. */
+.grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.4;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
 }
 
 /* Zone sûre iOS pour la bottom navigation */
@@ -49,5 +125,36 @@ body {
 }
 
 .animate-pop {
-  animation: pop-in 420ms ease-out;
+  animation: pop-in 420ms var(--ease-out-soft);
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Entrée en cascade : uniquement à l'arrivée sur une page, jamais en boucle. */
+.animate-rise {
+  animation: rise-in 520ms var(--ease-out-soft) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .animate-pop,
+  .animate-rise {
+    animation: none;
+  }
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+  }
 }

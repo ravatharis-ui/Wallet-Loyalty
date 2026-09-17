@@ -3,7 +3,7 @@ export const metadata = { title: "Politique de confidentialité" };
 export default function PrivacyPage() {
   return (
     <>
-      <h1 className="text-2xl font-bold">Politique de confidentialité</h1>
+      <h1 className="text-3xl font-semibold tracking-[-0.03em]">Politique de confidentialité</h1>
       <p>
         Fidelia est un service de carte de fidélité digitale utilisé par des commerces. Cette page
         explique quelles données sont collectées, pourquoi, et comment les faire supprimer.

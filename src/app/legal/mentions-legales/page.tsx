@@ -6,7 +6,7 @@ export const metadata = { title: "Mentions légales" };
 function Field({ value }: { value: string }) {
   if (!value) {
     return (
-      <span className="rounded bg-amber-100 px-1 font-medium text-amber-900">
+      <span className="rounded bg-warning-soft px-1 font-medium text-warning">
         à compléter dans src/lib/legal.ts
       </span>
     );
@@ -17,7 +17,7 @@ function Field({ value }: { value: string }) {
 export default function LegalNoticePage() {
   return (
     <>
-      <h1 className="text-2xl font-bold">Mentions légales</h1>
+      <h1 className="text-3xl font-semibold tracking-[-0.03em]">Mentions légales</h1>
 
       <h2>Éditeur du site</h2>
       <p>

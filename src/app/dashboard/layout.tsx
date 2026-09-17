@@ -11,10 +11,21 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   return (
     <div className="min-h-dvh pb-24 md:pb-0">
-      <header className="border-b border-border">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-5 py-3">
-          <Link href="/dashboard" className="font-semibold">
-            {session.business.name}
+      <header className="sticky top-0 z-40 border-b border-border/70 bg-background/85 backdrop-blur-md">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-5 py-3">
+          <Link
+            href="/dashboard"
+            className="flex min-w-0 items-center gap-2.5 rounded-md transition-opacity hover:opacity-80"
+          >
+            <span
+              aria-hidden
+              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-foreground font-display text-lg leading-none text-background"
+            >
+              F
+            </span>
+            <span className="truncate font-semibold tracking-[-0.01em]">
+              {session.business.name}
+            </span>
           </Link>
           <div className="flex items-center gap-1">
             <Button asChild variant="ghost" size="sm">
@@ -33,8 +44,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
       </header>
 
       {session.access.level === "free" ? (
-        <div className="border-b border-indigo-200 bg-indigo-50">
-          <div className="mx-auto flex max-w-5xl flex-col gap-2 px-5 py-3 text-sm text-indigo-900 sm:flex-row sm:items-center sm:justify-between">
+        <div className="border-b border-accent/20 bg-accent-soft">
+          <div className="mx-auto flex max-w-6xl flex-col gap-2 px-5 py-3 text-sm leading-relaxed text-accent sm:flex-row sm:items-center sm:justify-between">
             <span>
               Mode découverte :{" "}
               <strong>
@@ -54,13 +65,13 @@ export default async function DashboardLayout({ children }: { children: React.Re
         <div
           className={
             session.access.level === "blocked"
-              ? "border-b border-red-200 bg-red-50"
-              : "border-b border-amber-200 bg-amber-50"
+              ? "border-b border-danger/20 bg-danger-soft"
+              : "border-b border-warning/20 bg-warning-soft"
           }
         >
           <div
-            className={`mx-auto flex max-w-5xl flex-col gap-2 px-5 py-3 text-sm sm:flex-row sm:items-center sm:justify-between ${
-              session.access.level === "blocked" ? "text-red-900" : "text-amber-900"
+            className={`mx-auto flex max-w-6xl flex-col gap-2 px-5 py-3 text-sm leading-relaxed sm:flex-row sm:items-center sm:justify-between ${
+              session.access.level === "blocked" ? "text-danger" : "text-warning"
             }`}
           >
             <span>
@@ -88,7 +99,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         </div>
       ) : null}
 
-      <div className="mx-auto flex max-w-5xl gap-8 px-5 py-6">
+      <div className="mx-auto flex max-w-6xl gap-10 px-5 py-8">
         <SideNav />
         <main className="min-w-0 flex-1">{children}</main>
       </div>

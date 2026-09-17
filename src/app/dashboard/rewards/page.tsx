@@ -41,7 +41,7 @@ export default async function RewardsPage() {
   return (
     <div className="space-y-8">
       <header>
-        <h1 className="text-2xl font-bold">Récompenses</h1>
+        <h1 className="text-3xl font-semibold tracking-[-0.03em]">Récompenses</h1>
         <p className="text-sm text-muted-foreground">
           Quand un client présente sa récompense, marquez-la comme utilisée.
         </p>

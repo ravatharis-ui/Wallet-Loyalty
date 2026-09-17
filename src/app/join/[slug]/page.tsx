@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { Gift } from "lucide-react";
 import { getBusinessBySlug, getReferrerFirstName } from "@/lib/public-data";
 import { JoinForm } from "./join-form";
 import { readableTextColor, safeCardColor } from "@/lib/colors";
@@ -34,33 +35,48 @@ export default async function JoinPage({
 
   return (
     <main className="mx-auto flex min-h-dvh max-w-md flex-col px-5 py-10">
-      <div className="text-center">
-        {business.logo_url ? (
-          // eslint-disable-next-line @next/next/no-img-element -- logo externe fourni par le commerçant
-          <img
-            src={business.logo_url}
-            alt=""
-            className="mx-auto mb-4 h-20 w-20 rounded-2xl object-cover"
-          />
-        ) : null}
-        <h1 className="text-2xl font-bold">{business.name}</h1>
-        <p className="mt-2 text-muted-foreground">Rejoignez notre programme fidélité</p>
-        {program ? (
-          <p
-            className="mt-4 rounded-xl px-4 py-3 font-medium"
-            style={{ background: cardColor, color: cardText }}
-          >
-            {program.reward_threshold} visites = {program.reward_name}
-          </p>
-        ) : null}
-      </div>
+      {/* Le commerce se présente dans ses propres couleurs : le client
+          reconnaît la boutique avant de reconnaître Fidelia. */}
+      <section
+        className="grain relative overflow-hidden rounded-2xl px-6 py-8 text-center shadow-md"
+        style={{ background: cardColor, color: cardText }}
+      >
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -left-24 -top-28 h-72 w-72 rounded-full opacity-20"
+          style={{ background: `radial-gradient(circle, ${cardText} 0%, transparent 70%)` }}
+        />
+        <div className="relative">
+          {business.logo_url ? (
+            // eslint-disable-next-line @next/next/no-img-element -- logo externe fourni par le commerçant
+            <img
+              src={business.logo_url}
+              alt=""
+              className="mx-auto mb-5 h-20 w-20 rounded-2xl bg-white/90 object-cover"
+            />
+          ) : null}
+          <h1 className="font-display text-4xl leading-none">{business.name}</h1>
+          <p className="mt-3 text-sm opacity-80">Rejoignez notre programme de fidélité</p>
+          {program ? (
+            <p
+              className="mx-auto mt-6 inline-block rounded-lg px-4 py-2.5 text-sm font-semibold"
+              style={{ background: `${cardText}1f`, border: `1px solid ${cardText}3d` }}
+            >
+              {program.reward_threshold} visites = {program.reward_name}
+            </p>
+          ) : null}
+        </div>
+      </section>
 
       {referrerName ? (
-        <p className="mt-4 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-center text-sm text-green-900">
-          🎁 <strong>{referrerName}</strong> vous invite
-          {program && program.referral_points > 0
-            ? ` : vous gagnez ${program.referral_points} points d'avance dès votre première visite.`
-            : "."}
+        <p className="mt-4 flex items-start gap-2.5 rounded-lg border border-success/20 bg-success-soft px-4 py-3 text-sm leading-relaxed text-success">
+          <Gift className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+          <span>
+            <strong className="font-semibold">{referrerName}</strong> vous invite
+            {program && program.referral_points > 0
+              ? ` : vous gagnez ${program.referral_points} points d'avance dès votre première visite.`
+              : "."}
+          </span>
         </p>
       ) : null}
 
@@ -70,7 +86,7 @@ export default async function JoinPage({
         Vous avez déjà une carte ?{" "}
         <Link
           href={`/join/${business.slug}/retrouver`}
-          className="font-medium text-accent underline"
+          className="font-medium text-accent underline underline-offset-4"
         >
           La recevoir par email
         </Link>

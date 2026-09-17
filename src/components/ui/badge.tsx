@@ -1,12 +1,17 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 
+/**
+ * Étiquette d'état. Angles légèrement adoucis plutôt que pilule : la pilule
+ * « New / Beta » est le réflexe par défaut, et elle ne dit rien de plus.
+ */
 const styles = {
   default: "bg-muted text-muted-foreground",
-  success: "bg-green-100 text-green-800",
-  warning: "bg-amber-100 text-amber-900",
-  danger: "bg-red-100 text-red-800",
-  accent: "bg-indigo-100 text-indigo-800",
+  success: "bg-success-soft text-success",
+  warning: "bg-warning-soft text-warning",
+  danger: "bg-danger-soft text-danger",
+  accent: "bg-accent-soft text-accent",
+  reward: "bg-reward-soft text-reward",
 } as const;
 
 export function Badge({
@@ -17,7 +22,7 @@ export function Badge({
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium",
+        "inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-xs font-semibold",
         styles[variant],
         className,
       )}

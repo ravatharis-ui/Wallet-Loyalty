@@ -13,7 +13,7 @@ export default async function ScanPage() {
   return (
     <div className="space-y-5">
       <header>
-        <h1 className="text-2xl font-bold">Scanner un client</h1>
+        <h1 className="text-3xl font-semibold tracking-[-0.03em]">Scanner un client</h1>
         <p className="text-sm text-muted-foreground">
           Scannez le QR code de la carte du client pour ajouter une visite.
         </p>

@@ -44,7 +44,7 @@ export default async function SettingsPage({
   return (
     <div className="space-y-8">
       <header>
-        <h1 className="text-2xl font-bold">Réglages</h1>
+        <h1 className="text-3xl font-semibold tracking-[-0.03em]">Réglages</h1>
       </header>
 
       {abonnement === "ok" ? (

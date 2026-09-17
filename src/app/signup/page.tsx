@@ -1,26 +1,31 @@
 import Link from "next/link";
 import { SignupForm } from "./signup-form";
+import { AuthShell } from "@/components/auth-shell";
 import { TRIAL_DAYS } from "@/lib/pricing";
 
 export const metadata = { title: "Créer un compte" };
 
 export default function SignupPage() {
   return (
-    <main className="mx-auto flex min-h-dvh max-w-md flex-col justify-center px-5 py-10">
-      <Link href="/" className="mb-8 text-lg font-semibold">
-        Fidelia
-      </Link>
-      <h1 className="text-2xl font-bold">Créer votre compte</h1>
-      <p className="mt-1 text-sm text-muted-foreground">
-        {TRIAL_DAYS} jours d&apos;essai. Votre programme de fidélité est prêt en 2 minutes.
-      </p>
+    <AuthShell
+      title="Créer votre compte"
+      description={`${TRIAL_DAYS} jours d'essai, sans carte bancaire. Votre programme de fidélité est prêt en deux minutes.`}
+      aside={
+        <>
+          Vos trois premières cartes sont gratuites, sans limite de durée. Vous ne payez que si le
+          programme prend.
+        </>
+      }
+      footer={
+        <>
+          Déjà inscrit ?{" "}
+          <Link href="/login" className="font-medium text-accent underline underline-offset-4">
+            Se connecter
+          </Link>
+        </>
+      }
+    >
       <SignupForm />
-      <p className="mt-6 text-sm text-muted-foreground">
-        Déjà inscrit ?{" "}
-        <Link href="/login" className="font-medium text-accent underline">
-          Se connecter
-        </Link>
-      </p>
-    </main>
+    </AuthShell>
   );
 }

@@ -32,7 +32,7 @@ function Step({
 }) {
   return (
     <Card className="flex flex-col">
-      <span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
+      <span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
         {number}
       </span>
       <h3 className="mt-3 font-semibold">{title}</h3>
@@ -92,7 +92,7 @@ export function HelpContent({ joinUrl }: { joinUrl: string }) {
   return (
     <div className="space-y-8">
       <header>
-        <h1 className="text-2xl font-bold">Guide de prise en main</h1>
+        <h1 className="text-3xl font-semibold tracking-[-0.03em]">Guide de prise en main</h1>
         <p className="mt-1 text-muted-foreground">
           Tout ce qu&apos;il faut savoir pour faire revenir vos clients. Comptez cinq minutes.
         </p>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Gift } from "lucide-react";
 import { requireMerchant } from "@/lib/auth";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { inactivityCutoff } from "@/lib/stats";
@@ -73,7 +74,7 @@ export default async function CustomersPage({
     <div className="space-y-5">
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold">Clients</h1>
+          <h1 className="text-3xl font-semibold tracking-[-0.03em]">Clients</h1>
           <p className="text-sm text-muted-foreground">
             {customers?.length ?? 0} client(s) affiché(s)
           </p>
@@ -123,7 +124,12 @@ export default async function CustomersPage({
                   <span className="text-muted-foreground">
                     {formatRelativeDays(customer.last_visit_at)}
                   </span>
-                  {rewardCount > 0 ? <Badge variant="success">🎁 {rewardCount}</Badge> : null}
+                  {rewardCount > 0 ? (
+                    <Badge variant="success">
+                      <Gift className="h-3 w-3" aria-hidden />
+                      {rewardCount}
+                    </Badge>
+                  ) : null}
                 </div>
               </Link>
             );
