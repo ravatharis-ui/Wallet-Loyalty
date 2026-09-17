@@ -60,10 +60,11 @@ export function PushOptIn({ token, businessName }: { token: string; businessName
   const [message, setMessage] = useState<string | null>(null);
 
   const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
-  if (!publicKey || permission === "unsupported") return null;
+  if (!publicKey) return null;
 
-  // Sur iPhone, le push n'existe que depuis l'écran d'accueil. Proposer le
-  // bouton avant l'installation ne mènerait qu'à un refus silencieux.
+  // Ce test passe avant celui du support, et c'est volontaire : Safari ne
+  // connaît le push qu'une fois la carte installée. En concluant d'abord
+  // « non supporté », on masquerait justement l'explication qui dit quoi faire.
   if (isIos && !isStandalone) {
     return (
       <p className="mt-6 rounded-lg bg-muted px-4 py-3 text-center text-sm leading-relaxed text-muted-foreground">
@@ -72,6 +73,8 @@ export function PushOptIn({ token, businessName }: { token: string; businessName
       </p>
     );
   }
+
+  if (permission === "unsupported") return null;
 
   if (permission === "denied") {
     return (
