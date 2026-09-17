@@ -168,6 +168,23 @@ exécutée dans le SQL Editor.
       vérifiée (colonne `card_color`, bucket `logos` public).
 - [x] ~~Redirect URL `/auth/callback`~~ : ajoutée et vérifiée.
 
+### 💶 Tarification — décidée
+
+Un seul tarif public, **49,90 €/mois** (480 €/an), inchangé. Décision prise
+après comparaison du marché : les solutions en libre-service se situent entre
+17 et 35 €, les acteurs installés vers 65 € HT avec frais de mise en service.
+Fidelia se vend en face à face, pas par comparateur : le prix n'est donc pas
+l'argument décisif, la présence sur l'île l'est.
+
+Pas de second palier à bas prix pour l'instant : retirer les relances et les
+campagnes reviendrait à vendre une carte à tampons face à des offres gratuites,
+et à fabriquer des clients déçus alors que ce qui manque, ce sont des
+références. À reconsidérer après trois installations, avec de vrais retours.
+
+- [ ] **Tarif fondateur** : coupon Stripe de 14,90 € de remise (soit 35 €/mois),
+      limité au tarif mensuel, à 24 mois et à 10 utilisations, exposé via un
+      code promotionnel. Le Checkout accepte déjà les codes (`allow_promotion_codes`).
+
 ### 🟡 À clarifier
 
 - [ ] **TVA** : les CGU annoncent « TTC ». À confirmer avec le comptable
