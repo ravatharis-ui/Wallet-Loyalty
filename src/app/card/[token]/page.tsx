@@ -13,10 +13,18 @@ import { readableTextColor, safeCardColor } from "@/lib/colors";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = {
-  title: "Ma carte de fidélité",
-  robots: { index: false, follow: false },
-};
+/**
+ * Chaque carte pointe vers son propre manifeste : sans lui, le raccourci créé
+ * sur l'écran d'accueil rouvrirait l'accueil de Fidelia au lieu de la carte.
+ */
+export async function generateMetadata({ params }: { params: Promise<{ token: string }> }) {
+  const { token } = await params;
+  return {
+    title: "Ma carte de fidélité",
+    robots: { index: false, follow: false },
+    manifest: `/card/${token}/manifest`,
+  };
+}
 
 export default async function CardPage({
   params,
