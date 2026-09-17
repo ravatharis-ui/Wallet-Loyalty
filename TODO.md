@@ -79,8 +79,9 @@ Statut : `[ ]` à faire · `[x]` terminé
 
 ## État — MVP complet et en production
 
-Déployé sur Vercel (`wallet-loyalty-phi.vercel.app`), base Supabase migrée avec
-RLS active sur les 9 tables.
+Déployé sur **https://fidelia.re** (Vercel), base Supabase migrée avec RLS active
+sur les 9 tables. L'ancienne adresse `wallet-loyalty-phi.vercel.app` reste active
+en parallèle : les QR codes déjà imprimés continuent de fonctionner.
 
 **Vérifié manuellement en production :**
 
@@ -107,16 +108,12 @@ RLS active sur les 9 tables.
       À confirmer si ce n'est pas déjà fait : portail client activé **en live**
       (réglage distinct du mode test) et nom public « FIDELIA » sur le relevé
       bancaire.
-- [ ] **Nom de domaine (~7 €/an) + vérification Resend** — décision : reporté
-      après la première signature. La démonstration n'en a pas besoin, et les QR
-      imprimés sur l'adresse `*.vercel.app` continueront de fonctionner même
-      après l'ajout d'un domaine (Vercel conserve les deux).
-      ⚠️ Tant qu'il n'est pas en place, **aucune relance ne part vers de vrais
-      clients** : le bac à sable Resend n'écrit qu'à l'adresse du compte. À acheter
-      le jour même de la signature, avant d'installer le commerce, car la
-      propagation DNS prend quelques heures.
-      Pour démontrer les relances en attendant : inscrivez-vous comme client de
-      test avec votre propre adresse et montrez l'email reçu.
+- [x] ~~Nom de domaine + vérification Resend~~ : `fidelia.re` acheté chez
+      Infomaniak, rattaché à Vercel, et vérifié dans Resend (région Irlande,
+      DKIM aligné avec le DMARC `p=reject` du domaine). **Vérifié de bout en
+      bout** : un email de bienvenue envoyé depuis `contact@fidelia.re` arrive
+      en boîte de réception, au nom du commerce.
+      Resend n'envoie que — la réception reste sur la messagerie Infomaniak.
 
 ### 🟠 Avant de confier de vraies données
 
