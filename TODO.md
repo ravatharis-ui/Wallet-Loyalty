@@ -198,6 +198,19 @@ références. À reconsidérer après trois installations, avec de vrais retours
 - [ ] Médiateur de la consommation : adhésion puis renseigner `legal.ts`.
 - [ ] Remplacer l'email Gmail des mentions légales par une adresse du domaine.
 
+### 🛠 Suivi des commerces
+
+- [ ] **Variable `ADMIN_EMAILS` dans Vercel** : vos adresses, séparées par des
+      virgules. Sans elle, `/admin` répond 404 pour tout le monde, y compris
+      vous. La page n'est liée nulle part : elle s'ouvre à l'adresse directe.
+
+- [ ] **Surveillance externe** : un service qui interroge `fidelia.re` toutes
+      les cinq minutes et alerte s'il ne répond plus. Une page interne ne peut
+      pas signaler que l'application est tombée.
+
+- [ ] Sentry, quand il y aura des clients payants : aujourd'hui une erreur
+      serveur ne remonte à personne.
+
 ### 🟢 Après le premier client payant
 
 - [ ] **Canal SMS, en crédits** : décision prise de ne pas l'inclure dans
