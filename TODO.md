@@ -136,7 +136,9 @@ en parallèle : les QR codes déjà imprimés continuent de fonctionner.
       faute d'un projet Supabase de test. Non bloquant avec un seul commerce.
       À lancer avant d'en installer plusieurs, ou après toute modification
       touchant les permissions. Commandes dans le README.
-- [ ] **Nettoyer les données de test** avant d'installer un vrai commerce.
+- [x] ~~Nettoyer les données de test~~ : base vidée (commerces, clients,
+      visites, campagnes, abonnements push), fichiers de stockage supprimés et
+      comptes de connexion retirés. L'application est vierge et fonctionnelle.
 
 ### ⚙️ Migrations Supabase — toutes appliquées
 
