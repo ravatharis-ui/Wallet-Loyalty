@@ -4,6 +4,7 @@ import {
   ScanLine,
   Gift,
   MailCheck,
+  Bell,
   Users,
   Megaphone,
   Palette,
@@ -107,8 +108,8 @@ export function HelpContent({ joinUrl }: { joinUrl: string }) {
             href="/dashboard/loyalty"
             action="Configurer"
           >
-            Choisissez ce que vos clients gagnent et au bout de combien. Par exemple : 10 visites =
-            1 café offert.
+            Réglez comment vos clients cumulent, puis composez votre catalogue : un café à 10
+            points, un menu à 60. Mettez-en toujours un accessible et un plus ambitieux.
           </Step>
           <Step
             number={2}
@@ -120,8 +121,8 @@ export function HelpContent({ joinUrl }: { joinUrl: string }) {
             créer leur carte.
           </Step>
           <Step number={3} title="Scannez vos clients" href="/dashboard/scan" action="Scanner">
-            À chaque passage, scannez la carte du client depuis votre téléphone. Une visite est
-            enregistrée en quelques secondes.
+            À chaque passage, scannez la carte depuis votre téléphone. C&apos;est aussi là que vous
+            validez l&apos;échange d&apos;une récompense, quand le client est devant vous.
           </Step>
         </div>
       </section>
@@ -199,11 +200,46 @@ export function HelpContent({ joinUrl }: { joinUrl: string }) {
           </p>
         </Section>
 
-        <Section icon={Megaphone} title="Vous pouvez écrire à vos clients">
+        <Section icon={Bell} title="Vos clients peuvent être prévenus sur leur téléphone">
           <p>
-            Depuis Campagnes, envoyez un email à tous vos clients, à ceux absents depuis 30 jours,
-            ou à ceux qui ont une récompense en attente. Le nombre de destinataires s&apos;affiche
-            avant l&apos;envoi.
+            Depuis leur carte, vos clients peuvent activer les <strong>notifications</strong>. Elles
+            arrivent sur leur écran verrouillé, comme un message — c&apos;est plus direct qu&apos;un
+            email, et ça ne vous coûte rien.
+          </p>
+          <p>
+            Elles partent automatiquement quand une récompense devient disponible et lors des
+            relances d&apos;absence. Vous pouvez aussi vous en servir pour vos campagnes.
+          </p>
+          <p>
+            Deux choses à savoir : le client doit <strong>accepter</strong> la demande de son
+            téléphone, et sur iPhone il doit d&apos;abord avoir ajouté sa carte à son écran
+            d&apos;accueil. Tout le monde ne le fera pas — la notification complète l&apos;email,
+            elle ne le remplace pas.
+          </p>
+        </Section>
+
+        <Section icon={Megaphone} title="Vous pouvez écrire à vos clients quand vous voulez">
+          <p>
+            Depuis Campagnes, écrivez un message et choisissez <strong>par quel canal</strong> il
+            part : email, notification, ou les deux. Avant l&apos;envoi, l&apos;écran vous indique
+            combien de clients sont réellement joignables par le canal retenu.
+          </p>
+          <p>
+            <strong>À qui</strong> — tous vos clients, les absents depuis 30 jours, ceux qui ont de
+            quoi échanger une récompense, les nouveaux du mois, ou vos habitués (cinq visites ou
+            plus). Les absents sont l&apos;audience qui rapporte le plus ; les nouveaux du mois
+            servent à déclencher la deuxième visite, la plus difficile à obtenir.
+          </p>
+          <p>
+            <strong>Ce que vous pouvez y mettre</strong> — un objet d&apos;email à vous, une photo,
+            et la mention <code>{"{prenom}"}</code> partout où vous voulez le prénom du client.
+            Écrivez « Bonjour {"{prenom}"} » et chacun lira son propre prénom.
+          </p>
+          <p>
+            <strong>Programmez l&apos;envoi</strong> en choisissant une date : le message partira le
+            matin venu, sans que vous ayez à y penser. Et avant d&apos;écrire à tout votre fichier,
+            utilisez <strong>« M&apos;envoyer un test »</strong> — c&apos;est le bouton qui vous
+            évitera la faute d&apos;orthographe envoyée à deux cents personnes.
           </p>
         </Section>
 
