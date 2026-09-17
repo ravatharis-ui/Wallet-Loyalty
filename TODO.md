@@ -200,9 +200,10 @@ références. À reconsidérer après trois installations, avec de vrais retours
 
 ### 🛠 Suivi des commerces
 
-- [ ] **Variable `ADMIN_EMAILS` dans Vercel** : vos adresses, séparées par des
-      virgules. Sans elle, `/admin` répond 404 pour tout le monde, y compris
-      vous. La page n'est liée nulle part : elle s'ouvre à l'adresse directe.
+- [x] ~~Variable `ADMIN_EMAILS` dans Vercel~~ : en place, page `/admin`
+      accessible et vérifiée. Elle n'est liée nulle part : elle s'ouvre à
+      l'adresse directe. Pour ajouter un accès, complétez la liste séparée par
+      des virgules et redéployez.
 
 - [ ] **Surveillance externe** : un service qui interroge `fidelia.re` toutes
       les cinq minutes et alerte s'il ne répond plus. Une page interne ne peut
