@@ -92,16 +92,17 @@ en parallèle : les QR codes déjà imprimés continuent de fonctionner.
   inscription client → carte digitale → scan → ajout de visite
 - Stripe en mode test : Checkout, abonnement, portail client, webhook (200 sur
   tous les événements), statut d'abonnement remonté dans l'application
-- Resend (domaine bac à sable) : relance d'inactivité reçue, cron protégé par
-  `CRON_SECRET`
+- Resend sur le domaine `fidelia.re` : email de bienvenue reçu en boîte de
+  réception, au nom du commerce ; cron protégé par `CRON_SECRET`
+- Notifications push : activation depuis la carte et réception vérifiées
+- Paliers de récompenses : catalogue, échange au comptoir et débit des points
 
 ### 🔴 Bloquant — avant d'encaisser le premier euro
 
-- [ ] **Clés VAPID dans Vercel** : `NEXT_PUBLIC_VAPID_PUBLIC_KEY`,
-      `VAPID_PRIVATE_KEY` et `VAPID_SUBJECT`. Sans elles, le bouton
-      d'activation des notifications n'apparaît pas. La clé publique étant
-      préfixée `NEXT_PUBLIC_`, elle est inscrite à la compilation : un simple
-      « Redeploy » ne suffit pas, il faut un build neuf.
+- [x] ~~Clés VAPID dans Vercel~~ : en place, notifications push vérifiées de
+      bout en bout. Rappel pour une future rotation : la clé publique est
+      préfixée `NEXT_PUBLIC_`, donc inscrite à la compilation — il faut un
+      build neuf, un « Redeploy » ne suffit pas.
 
 - [ ] **Plan Vercel Pro** (~20 $/mois) — décision : reporté au premier client
       payant. Le plan Hobby interdit l'usage commercial : à basculer le jour où
