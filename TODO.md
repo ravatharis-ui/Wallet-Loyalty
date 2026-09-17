@@ -137,6 +137,10 @@ Les six migrations du dossier `supabase/migrations/` sont en place sur le projet
 de production. Toute nouvelle migration s'ajoute ici tant qu'elle n'est pas
 exécutée dans le SQL Editor.
 
+- [ ] **Migration `20260108000000_push_notifications.sql`** : abonnements push
+      et canal `push` sur les messages. Sans elle, l'activation des
+      notifications échoue côté client — le reste continue de fonctionner.
+
 - [x] ~~Migration `20260107000000_reward_tiers.sql`~~ : catalogue de paliers,
       `redeem_reward`, et `add_visit` qui ne consomme plus les points. Appliquée.
 
@@ -168,10 +172,12 @@ exécutée dans le SQL Editor.
 
 ### 🟢 Après le premier client payant
 
-- [ ] **Canal SMS** : téléphone et email sont tous deux obligatoires depuis la
-      refonte de l'inscription ; le SMS reste un canal de secours si la
-      délivrabilité email déçoit. L'architecture est prête (`messages.channel`
-      accepte déjà `'sms'`). Une demi-journée.
+- [ ] **Canal SMS, en crédits** : décision prise de ne pas l'inclure dans
+      l'abonnement — à ~0,05-0,08 € le message, une campagne vers 250 clients
+      coûterait 15 €, ce qui effacerait la marge d'un abonnement à 39 €. À
+      vendre sous forme de packs de crédits, quand un commerçant le demandera.
+      L'architecture est prête (`messages.channel` accepte `'sms'`). Prévoir
+      aussi la mention STOP et les plages horaires légales.
 - [ ] Sentry / PostHog : volontairement hors MVP (voir ARCHITECTURE.md).
 - [ ] WhatsApp : seulement si un commerçant le réclame. Vérification Meta,
       templates pré-approuvés, facturation à la conversation.

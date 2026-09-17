@@ -5,6 +5,7 @@ import { affordableTiers, nextTier, progressLabel } from "@/lib/loyalty";
 import { QrCode } from "@/components/qr-code";
 import { Alert } from "@/components/ui/alert";
 import { AddToHomeScreen } from "@/components/add-to-home-screen";
+import { PushOptIn } from "@/components/push-opt-in";
 import { ReferralShare } from "@/components/referral-share";
 import { appUrl } from "@/lib/env";
 import { formatDate, formatEuros } from "@/lib/utils";
@@ -217,6 +218,8 @@ export default async function CardPage({
           />
         </section>
       ) : null}
+
+      <PushOptIn token={customer.card_token} businessName={business.name} />
 
       <AddToHomeScreen />
 

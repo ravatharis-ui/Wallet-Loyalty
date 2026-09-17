@@ -2,6 +2,7 @@ import "server-only";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { appUrl } from "@/lib/env";
 import { sendEmail } from "@/lib/email/send";
+import { sendPushToCustomer } from "@/lib/push/send";
 import { inactive30Email, inactive60Email } from "@/lib/email/templates";
 import {
   INACTIVITY_30_DAYS,
@@ -105,8 +106,39 @@ export async function runInactivityReminders(now: Date = new Date()): Promise<Re
         ? "inactive_30_days"
         : null;
 
-    if (!type || !customer.email) {
+    if (!type) {
       summary.skipped += 1;
+      continue;
+    }
+
+    // Le push accompagne l'email ; un client sans email mais abonné au push
+    // reste joignable, ce qui n'était pas le cas avant.
+    const push = await sendPushToCustomer(customer.id, {
+      title: `${business.name} vous attend`,
+      body:
+        type === "inactive_60_days"
+          ? `${customer.first_name}, cela fait un moment. Votre carte vous attend.`
+          : `${customer.first_name}, vos points sont toujours là.`,
+      path: `/card/${customer.card_token}`,
+      tag: `inactive-${customer.id}`,
+    });
+
+    if (push.sent > 0) {
+      await admin.from("messages").insert({
+        business_id: customer.business_id,
+        customer_id: customer.id,
+        type,
+        channel: "push",
+        status: "sent",
+        subject: null,
+        content: "Relance d'inactivité",
+        sent_at: now.toISOString(),
+      });
+      summary.sent += 1;
+    }
+
+    if (!customer.email) {
+      if (push.sent === 0) summary.skipped += 1;
       continue;
     }
 

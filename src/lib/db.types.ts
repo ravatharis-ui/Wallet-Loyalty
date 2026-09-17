@@ -14,7 +14,7 @@ export type MessageType =
   | "inactive_60_days"
   | "reward_available"
   | "campaign";
-export type MessageChannel = "email" | "sms";
+export type MessageChannel = "email" | "sms" | "push";
 export type MessageStatus = "pending" | "sent" | "failed" | "skipped";
 export type AudienceType = "all" | "inactive_30_days" | "reward_available";
 export type SubscriptionStatus =
@@ -191,3 +191,15 @@ export interface AddVisitResult {
 export type RedeemResult =
   | { ok: true; reward_name: string; points_spent: number; current_points: number }
   | { ok: false; reason: "insufficient_points"; current_points: number; points_cost: number };
+
+/** Abonnement push d'un appareil du client. */
+export interface PushSubscriptionRow {
+  id: string;
+  business_id: string;
+  customer_id: string;
+  endpoint: string;
+  p256dh: string;
+  auth: string;
+  created_at: string;
+  last_used_at: string | null;
+}

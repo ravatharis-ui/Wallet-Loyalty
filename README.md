@@ -50,6 +50,7 @@ pnpm dev
      minimum, plafond mensuel) et `add_visit` mis à jour
    - `20260107000000_reward_tiers.sql` — catalogue de paliers, `redeem_reward`,
      et `add_visit` qui ne consomme plus les points
+   - `20260108000000_push_notifications.sql` — abonnements push et canal `push`
 3. Dans **Authentication → Providers → Email**, activer Email/Password.
    Pour le MVP, désactiver « Confirm email » afin que l'inscription commerçant
    ouvre directement le dashboard (sinon le commerçant doit confirmer son email
