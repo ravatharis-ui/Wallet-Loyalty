@@ -134,7 +134,11 @@ RLS active sur les 9 tables.
       touchant les permissions. Commandes dans le README.
 - [ ] **Nettoyer les données de test** avant d'installer un vrai commerce.
 
-### ⚙️ À appliquer sur Supabase
+### ⚙️ Migrations Supabase — toutes appliquées
+
+Les six migrations du dossier `supabase/migrations/` sont en place sur le projet
+de production. Toute nouvelle migration s'ajoute ici tant qu'elle n'est pas
+exécutée dans le SQL Editor.
 
 - [x] ~~Migration `20260106000000_referral_guards.sql`~~ : garde-fous du
       parrainage (achat minimum, plafond mensuel), appliquée.
@@ -144,9 +148,9 @@ RLS active sur les 9 tables.
 - [x] ~~Migration `20260104000000_loyalty_modes.sql`~~ : modes de fidélité,
       appliquée et vérifiée (scan et points fonctionnent).
 
-- [ ] **Migration `20260103000000_card_delivery.sql`** : types de message
-      `welcome` et `card_recovery`. Sans elle, l'email de bienvenue et le renvoi
-      de carte échouent à l'enregistrement (contrainte `messages_type_check`).
+- [x] ~~Migration `20260103000000_card_delivery.sql`~~ : types de message
+      `welcome` et `card_recovery`, appliquée et vérifiée sur la contrainte
+      `messages_type_check`.
 
 - [x] ~~Migration `20260102000000_card_customisation.sql`~~ : appliquée et
       vérifiée (colonne `card_color`, bucket `logos` public).
