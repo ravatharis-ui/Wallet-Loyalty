@@ -97,6 +97,12 @@ en parallèle : les QR codes déjà imprimés continuent de fonctionner.
 
 ### 🔴 Bloquant — avant d'encaisser le premier euro
 
+- [ ] **Clés VAPID dans Vercel** : `NEXT_PUBLIC_VAPID_PUBLIC_KEY`,
+      `VAPID_PRIVATE_KEY` et `VAPID_SUBJECT`. Sans elles, le bouton
+      d'activation des notifications n'apparaît pas. La clé publique étant
+      préfixée `NEXT_PUBLIC_`, elle est inscrite à la compilation : un simple
+      « Redeploy » ne suffit pas, il faut un build neuf.
+
 - [ ] **Plan Vercel Pro** (~20 $/mois) — décision : reporté au premier client
       payant. Le plan Hobby interdit l'usage commercial : à basculer le jour où
       vous facturez, pas avant.
@@ -137,13 +143,11 @@ Les six migrations du dossier `supabase/migrations/` sont en place sur le projet
 de production. Toute nouvelle migration s'ajoute ici tant qu'elle n'est pas
 exécutée dans le SQL Editor.
 
-- [ ] **Migration `20260109000000_campaigns.sql`** : canal (email / push / les
-      deux), objet, image, envoi programmé, et deux audiences de plus. Sans
-      elle, la création d'une campagne échoue.
+- [x] ~~Migration `20260109000000_campaigns.sql`~~ : canal, objet, image, envoi
+      programmé et nouvelles audiences. Appliquée et vérifiée.
 
-- [ ] **Migration `20260108000000_push_notifications.sql`** : abonnements push
-      et canal `push` sur les messages. Sans elle, l'activation des
-      notifications échoue côté client — le reste continue de fonctionner.
+- [x] ~~Migration `20260108000000_push_notifications.sql`~~ : abonnements push
+      et canal `push`. Appliquée et vérifiée.
 
 - [x] ~~Migration `20260107000000_reward_tiers.sql`~~ : catalogue de paliers,
       `redeem_reward`, et `add_visit` qui ne consomme plus les points. Appliquée.
