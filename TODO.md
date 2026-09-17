@@ -141,9 +141,8 @@ RLS active sur les 9 tables.
 
 - [x] ~~Migration `20260105000000_referral.sql`~~ : parrainage, appliquée.
 
-- [ ] **Migration `20260104000000_loyalty_modes.sql`** : modes de fidélité et
-      nouvelle version de `add_visit`. Sans elle, l'enregistrement des visites
-      échoue — la signature de la fonction a changé.
+- [x] ~~Migration `20260104000000_loyalty_modes.sql`~~ : modes de fidélité,
+      appliquée et vérifiée (scan et points fonctionnent).
 
 - [ ] **Migration `20260103000000_card_delivery.sql`** : types de message
       `welcome` et `card_recovery`. Sans elle, l'email de bienvenue et le renvoi
@@ -165,9 +164,10 @@ RLS active sur les 9 tables.
 
 ### 🟢 Après le premier client payant
 
-- [ ] **Canal SMS** : le téléphone est obligatoire à l'inscription, l'email non —
-      100 % de couverture contre une minorité. L'architecture est prête
-      (`messages.channel` accepte déjà `'sms'`). Une demi-journée.
+- [ ] **Canal SMS** : téléphone et email sont tous deux obligatoires depuis la
+      refonte de l'inscription ; le SMS reste un canal de secours si la
+      délivrabilité email déçoit. L'architecture est prête (`messages.channel`
+      accepte déjà `'sms'`). Une demi-journée.
 - [ ] Sentry / PostHog : volontairement hors MVP (voir ARCHITECTURE.md).
 - [ ] WhatsApp : seulement si un commerçant le réclame. Vérification Meta,
       templates pré-approuvés, facturation à la conversation.
