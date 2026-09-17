@@ -112,7 +112,8 @@ export default function DemoPage() {
               <Card variant="flat" className="flex items-start gap-3">
                 <Gift className="mt-0.5 h-5 w-5 shrink-0 text-accent" aria-hidden />
                 <p className="text-sm leading-relaxed">
-                  La récompense se déclenche toute seule, et le client est prévenu par email.
+                  Dès qu&apos;un client a de quoi échanger, il est prévenu par email et sur son
+                  téléphone.
                 </p>
               </Card>
             </div>

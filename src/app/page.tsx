@@ -30,7 +30,7 @@ const steps = [
   {
     icon: MailCheck,
     title: "Les clients qui ne reviennent plus sont relancés",
-    text: "Un email part automatiquement après 30 jours sans visite, un second après 60. Vous n'y touchez pas.",
+    text: "Un email part automatiquement après 30 jours sans visite, un second après 60 — et une notification sur le téléphone de ceux qui l'ont acceptée. Vous n'y touchez pas.",
   },
 ];
 
@@ -40,7 +40,8 @@ const included = [
   "Catalogue de récompenses à plusieurs paliers",
   "Scanner depuis votre téléphone, sans matériel",
   "Relances automatiques à 30 et 60 jours",
-  "Campagnes email vers vos clients",
+  "Notifications sur le téléphone de vos clients",
+  "Campagnes avec photo, ciblées et programmables",
   "Import de votre fichier clients actuel",
   "Parrainage entre clients, avec garde-fous",
 ];
@@ -60,6 +61,11 @@ const objections = [
     question: "Qui possède les données de mes clients ?",
     answer:
       "Vous. Elles ne sont ni revendues ni partagées, aucun autre commerce n'y a accès, et un client peut demander leur suppression complète à tout moment.",
+  },
+  {
+    question: "Mes clients doivent-ils installer une application ?",
+    answer:
+      "Non. La carte s'ouvre dans leur navigateur et s'ajoute à leur écran d'accueil s'ils le souhaitent — c'est ce qui leur permet ensuite de recevoir vos notifications.",
   },
   {
     question: "Je peux arrêter quand je veux ?",
