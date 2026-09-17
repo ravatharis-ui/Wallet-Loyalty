@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ScanLine, Gift, QrCode, Settings, ArrowRight } from "lucide-react";
 import { requireMerchant } from "@/lib/auth";
 import { getDashboardStats } from "@/lib/stats";
-import { getActiveProgram } from "@/actions/loyalty";
+import { getActiveProgram, getRewardTiers } from "@/actions/loyalty";
 import { Card, CardLabel } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -95,10 +95,12 @@ function GettingStarted({ hasProgram }: { hasProgram: boolean }) {
 
 export default async function DashboardPage() {
   const session = await requireMerchant();
-  const [stats, program] = await Promise.all([
+  const [stats, program, tiers] = await Promise.all([
     getDashboardStats(session.businessId),
     getActiveProgram(session.businessId),
+    getRewardTiers(session.businessId),
   ]);
+  const tierCount = tiers.length;
 
   const color = safeCardColor(session.business.card_color);
   const growth = growthPercent(stats.visitsByMonth);
@@ -111,7 +113,7 @@ export default async function DashboardPage() {
         <h1 className="mt-2 text-3xl font-semibold tracking-[-0.03em]">{session.business.name}</h1>
         <p className="mt-1.5 text-sm text-muted-foreground">
           {program
-            ? `${program.reward_threshold} visites = ${program.reward_name}`
+            ? `${program.mode === "amount" ? `${program.points_per_euro} point${program.points_per_euro > 1 ? "s" : ""} par euro dépensé` : "Un tampon par passage"} · ${tierCount} récompense${tierCount > 1 ? "s" : ""} au catalogue`
             : "Configurez votre programme de fidélité pour commencer."}
         </p>
       </header>

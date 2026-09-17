@@ -2,7 +2,8 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { requireMerchant } from "@/lib/auth";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { getActiveProgram } from "@/actions/loyalty";
+import { getActiveProgram, getRewardTiers } from "@/actions/loyalty";
+import { affordableTiers } from "@/lib/loyalty";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { QrCode } from "@/components/qr-code";
@@ -27,7 +28,7 @@ export default async function CustomerPage({ params }: { params: Promise<{ id: s
 
   if (!customer) notFound();
 
-  const [{ data: visits }, { data: rewards }, { data: messages }, program] = await Promise.all([
+  const [{ data: visits }, { data: rewards }, { data: messages }, , tiers] = await Promise.all([
     supabase
       .from("visits")
       .select("*")
@@ -49,10 +50,11 @@ export default async function CustomerPage({ params }: { params: Promise<{ id: s
       .limit(10)
       .returns<Message[]>(),
     getActiveProgram(session.businessId),
+    getRewardTiers(session.businessId),
   ]);
 
-  const threshold = program?.reward_threshold ?? 10;
   const availableRewards = (rewards ?? []).filter((reward) => reward.status === "available");
+  const reachable = affordableTiers(customer.current_points, tiers);
 
   return (
     <div className="space-y-6">
@@ -71,10 +73,7 @@ export default async function CustomerPage({ params }: { params: Promise<{ id: s
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <Card>
           <p className="text-sm text-muted-foreground">Points</p>
-          <p className="text-2xl font-semibold tracking-[-0.03em]">
-            {customer.current_points}
-            <span className="text-base font-normal text-muted-foreground"> / {threshold}</span>
-          </p>
+          <p className="text-2xl font-semibold tracking-[-0.03em]">{customer.current_points}</p>
         </Card>
         <Card>
           <p className="text-sm text-muted-foreground">Visites</p>
@@ -85,8 +84,10 @@ export default async function CustomerPage({ params }: { params: Promise<{ id: s
           <p className="text-sm font-medium">{formatRelativeDays(customer.last_visit_at)}</p>
         </Card>
         <Card>
-          <p className="text-sm text-muted-foreground">Récompenses dispo</p>
-          <p className="text-2xl font-semibold tracking-[-0.03em]">{availableRewards.length}</p>
+          <p className="text-sm text-muted-foreground">À échanger</p>
+          <p className="text-2xl font-semibold tracking-[-0.03em]">
+            {reachable.length + availableRewards.length}
+          </p>
         </Card>
       </div>
 

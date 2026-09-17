@@ -1,7 +1,7 @@
 import "server-only";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { cardTokenSchema } from "@/lib/validation";
-import type { Business, Customer, LoyaltyProgram, Reward } from "@/lib/db.types";
+import type { Business, Customer, LoyaltyProgram, Reward, RewardTier } from "@/lib/db.types";
 
 /**
  * Lectures des pages publiques (/join, /card).
@@ -31,7 +31,7 @@ export async function getReferrerFirstName(
 
 export async function getBusinessBySlug(
   slug: string,
-): Promise<{ business: Business; program: LoyaltyProgram | null } | null> {
+): Promise<{ business: Business; program: LoyaltyProgram | null; tiers: RewardTier[] } | null> {
   if (!/^[a-z0-9-]{1,50}$/.test(slug)) return null;
 
   const admin = createSupabaseAdminClient();
@@ -43,20 +43,32 @@ export async function getBusinessBySlug(
 
   if (!business) return null;
 
-  const { data: program } = await admin
-    .from("loyalty_programs")
-    .select("*")
-    .eq("business_id", business.id)
-    .eq("active", true)
-    .maybeSingle<LoyaltyProgram>();
+  const [{ data: program }, { data: tiers }] = await Promise.all([
+    admin
+      .from("loyalty_programs")
+      .select("*")
+      .eq("business_id", business.id)
+      .eq("active", true)
+      .maybeSingle<LoyaltyProgram>(),
+    admin
+      .from("reward_tiers")
+      .select("*")
+      .eq("business_id", business.id)
+      .eq("active", true)
+      .order("points_cost", { ascending: true })
+      .returns<RewardTier[]>(),
+  ]);
 
-  return { business, program: program ?? null };
+  return { business, program: program ?? null, tiers: tiers ?? [] };
 }
 
 export interface CardData {
   customer: Customer;
   business: Business;
   program: LoyaltyProgram | null;
+  /** Catalogue du commerce, du moins cher au plus cher. */
+  tiers: RewardTier[];
+  /** Récompenses acquises sous l'ancien seuil unique, encore à remettre. */
   availableRewards: Reward[];
 }
 
@@ -73,22 +85,30 @@ export async function getCardByToken(token: string): Promise<CardData | null> {
 
   if (!customer) return null;
 
-  const [{ data: business }, { data: program }, { data: rewards }] = await Promise.all([
-    admin.from("businesses").select("*").eq("id", customer.business_id).maybeSingle<Business>(),
-    admin
-      .from("loyalty_programs")
-      .select("*")
-      .eq("business_id", customer.business_id)
-      .eq("active", true)
-      .maybeSingle<LoyaltyProgram>(),
-    admin
-      .from("rewards")
-      .select("*")
-      .eq("customer_id", customer.id)
-      .eq("status", "available")
-      .order("earned_at", { ascending: true })
-      .returns<Reward[]>(),
-  ]);
+  const [{ data: business }, { data: program }, { data: rewards }, { data: tiers }] =
+    await Promise.all([
+      admin.from("businesses").select("*").eq("id", customer.business_id).maybeSingle<Business>(),
+      admin
+        .from("loyalty_programs")
+        .select("*")
+        .eq("business_id", customer.business_id)
+        .eq("active", true)
+        .maybeSingle<LoyaltyProgram>(),
+      admin
+        .from("rewards")
+        .select("*")
+        .eq("customer_id", customer.id)
+        .eq("status", "available")
+        .order("earned_at", { ascending: true })
+        .returns<Reward[]>(),
+      admin
+        .from("reward_tiers")
+        .select("*")
+        .eq("business_id", customer.business_id)
+        .eq("active", true)
+        .order("points_cost", { ascending: true })
+        .returns<RewardTier[]>(),
+    ]);
 
   if (!business) return null;
 
@@ -96,6 +116,7 @@ export async function getCardByToken(token: string): Promise<CardData | null> {
     customer,
     business,
     program: program ?? null,
+    tiers: tiers ?? [],
     availableRewards: rewards ?? [],
   };
 }

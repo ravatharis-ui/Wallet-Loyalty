@@ -15,7 +15,13 @@ export interface ProgramRules {
   mode?: LoyaltyMode;
   points_per_visit: number;
   points_per_euro?: number;
-  reward_threshold: number;
+}
+
+/** Un palier du catalogue : ce que le client peut s'offrir, et à quel prix. */
+export interface RewardTierRules {
+  id: string;
+  name: string;
+  points_cost: number;
 }
 
 export interface LoyaltyState {
@@ -25,7 +31,6 @@ export interface LoyaltyState {
 
 export interface VisitOutcome extends LoyaltyState {
   points_added: number;
-  rewards_earned: number;
 }
 
 /**
@@ -47,59 +52,95 @@ export function pointsForVisit(rules: ProgramRules, amountCents?: number | null)
 
 /**
  * Applique une visite à l'état de fidélité d'un client.
- * Chaque palier atteint consomme `reward_threshold` points et crée une récompense.
+ *
+ * Les points ne sont jamais consommés ici : ils s'accumulent jusqu'à ce que le
+ * client décide d'échanger un palier, ce qui est un acte explicite au comptoir.
  */
 export function applyVisit(
   state: LoyaltyState,
   rules: ProgramRules,
   amountCents?: number | null,
 ): VisitOutcome {
-  const pointsPerVisit = pointsForVisit(rules, amountCents);
-  const threshold = Math.max(1, Math.trunc(rules.reward_threshold));
-
-  let points = state.current_points + pointsPerVisit;
-  let rewards = 0;
-
-  while (points >= threshold) {
-    points -= threshold;
-    rewards += 1;
-  }
-
+  const pointsAdded = pointsForVisit(rules, amountCents);
   return {
-    current_points: points,
+    current_points: state.current_points + pointsAdded,
     total_visits: state.total_visits + 1,
-    points_added: pointsPerVisit,
-    rewards_earned: rewards,
+    points_added: pointsAdded,
   };
 }
 
+/** Paliers triés du moins cher au plus cher. Source unique de l'ordre d'affichage. */
+export function sortTiers<T extends RewardTierRules>(tiers: readonly T[]): T[] {
+  return [...tiers].sort((a, b) => a.points_cost - b.points_cost);
+}
+
+/** Ce que le client peut s'offrir maintenant. */
+export function affordableTiers<T extends RewardTierRules>(
+  currentPoints: number,
+  tiers: readonly T[],
+): T[] {
+  return sortTiers(tiers).filter((tier) => tier.points_cost <= currentPoints);
+}
+
+/** Le premier palier encore hors de portée : c'est lui qui motive le retour. */
+export function nextTier<T extends RewardTierRules>(
+  currentPoints: number,
+  tiers: readonly T[],
+): T | null {
+  return sortTiers(tiers).find((tier) => tier.points_cost > currentPoints) ?? null;
+}
+
+/** Le meilleur palier accessible : celui qu'on met en avant sur la carte. */
+export function bestAffordableTier<T extends RewardTierRules>(
+  currentPoints: number,
+  tiers: readonly T[],
+): T | null {
+  const affordable = affordableTiers(currentPoints, tiers);
+  return affordable.length > 0 ? affordable[affordable.length - 1] : null;
+}
+
 /**
- * Nombre de visites restantes avant la prochaine récompense.
+ * Nombre de visites restantes avant un palier donné.
  * N'a de sens qu'en mode tampon : en mode points, c'est un montant qui manque,
  * pas un nombre de passages.
  */
-export function visitsUntilReward(currentPoints: number, rules: ProgramRules): number {
+export function visitsUntilReward(
+  currentPoints: number,
+  rules: ProgramRules,
+  pointsCost: number,
+): number {
   const pointsPerVisit = Math.max(1, Math.trunc(rules.points_per_visit));
-  const threshold = Math.max(1, Math.trunc(rules.reward_threshold));
-  const missing = Math.max(0, threshold - currentPoints);
+  const missing = Math.max(0, Math.trunc(pointsCost) - currentPoints);
   return Math.ceil(missing / pointsPerVisit);
 }
 
 /** Message de progression affiché sur la carte client. */
-export function progressLabel(currentPoints: number, rules: ProgramRules): string {
-  const threshold = Math.max(1, Math.trunc(rules.reward_threshold));
-
-  if (rules.mode === "amount") {
-    const missing = Math.max(0, threshold - currentPoints);
-    if (missing === 0) return "Récompense disponible !";
-    if (missing === 1) return "Plus qu'un point !";
-    return `Plus que ${missing} points !`;
+export function progressLabel(
+  currentPoints: number,
+  rules: ProgramRules,
+  tiers: readonly RewardTierRules[],
+): string {
+  if (tiers.length === 0) {
+    return "Cumulez des points à chaque passage.";
   }
 
-  const remaining = visitsUntilReward(currentPoints, rules);
-  if (remaining === 0) return "Récompense disponible !";
-  if (remaining === 1) return "Plus qu'une visite !";
-  return `Plus que ${remaining} visites !`;
+  const best = bestAffordableTier(currentPoints, tiers);
+  if (best) return `Vous pouvez échanger : ${best.name}`;
+
+  const next = nextTier(currentPoints, tiers);
+  // Sans palier abordable ni palier suivant, le catalogue serait vide : le cas
+  // est déjà traité plus haut, mais TypeScript ne le sait pas.
+  if (!next) return "Cumulez des points à chaque passage.";
+
+  if (rules.mode === "amount") {
+    const missing = Math.max(0, next.points_cost - currentPoints);
+    if (missing === 1) return `Plus qu'un point avant ${next.name}`;
+    return `Plus que ${missing} points avant ${next.name}`;
+  }
+
+  const remaining = visitsUntilReward(currentPoints, rules, next.points_cost);
+  if (remaining === 1) return `Plus qu'une visite avant ${next.name}`;
+  return `Plus que ${remaining} visites avant ${next.name}`;
 }
 
 /** Nombre de jours entiers écoulés depuis une date. */
@@ -164,18 +205,6 @@ export function shouldSendInactivityReminder(
   );
 
   return !alreadySent;
-}
-
-/** Une seule notification "récompense disponible" par récompense gagnée. */
-export function shouldNotifyReward(
-  candidate: Pick<ReminderCandidate, "email" | "sentMessages">,
-  rewardEarnedAt: string,
-): boolean {
-  if (!candidate.email) return false;
-  const earned = new Date(rewardEarnedAt).getTime();
-  return !candidate.sentMessages.some(
-    (m) => m.type === "reward_available" && new Date(m.created_at).getTime() >= earned,
-  );
 }
 
 /**

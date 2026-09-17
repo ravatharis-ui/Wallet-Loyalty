@@ -6,6 +6,7 @@ import { Camera, X, Check, Gift, Users } from "lucide-react";
 import {
   addVisitAction,
   lookupCustomerAction,
+  redeemTierAction,
   searchCustomerAction,
   type AddVisitState,
   type CustomerSummary,
@@ -36,6 +37,7 @@ export function ScanClient() {
   const [visit, setVisit] = useState<AddVisitState | null>(null);
   const [query, setQuery] = useState("");
   const [amount, setAmount] = useState("");
+  const [redeemed, setRedeemed] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
   function reset() {
@@ -86,11 +88,33 @@ export function ScanClient() {
           ...customer,
           currentPoints: result.result.currentPoints,
           totalVisits: result.result.totalVisits,
-          availableRewards: customer.availableRewards + result.result.rewardsCreated,
         });
       }
     });
   }
+
+  function handleRedeem(tierId: string, pointsCost: number) {
+    if (!customer || pending) return;
+    startTransition(async () => {
+      const result = await redeemTierAction(customer.id, tierId);
+      if (result.error) {
+        setRedeemed(null);
+        setError(result.error);
+        return;
+      }
+      setError(null);
+      setRedeemed(result.success ?? null);
+      setCustomer({ ...customer, currentPoints: customer.currentPoints - pointsCost });
+    });
+  }
+
+  // Ce que le solde permet, et ce qui reste à atteindre. Calculé ici plutôt que
+  // dans le JSX : le même découpage sert au compteur et au catalogue.
+  const tiers = customer?.tiers ?? [];
+  const points = customer?.currentPoints ?? 0;
+  const affordable = tiers.filter((tier) => tier.pointsCost <= points);
+  const upcoming = tiers.find((tier) => tier.pointsCost > points) ?? null;
+  const goal = upcoming?.pointsCost ?? tiers[tiers.length - 1]?.pointsCost ?? 0;
 
   if (mode === "idle") {
     return (
@@ -148,11 +172,20 @@ export function ScanClient() {
 
           <div>
             <p className="font-medium">
-              {customer.currentPoints} / {customer.rewardThreshold} points
+              {customer.currentPoints} point{customer.currentPoints > 1 ? "s" : ""}
+              {upcoming ? (
+                <span className="font-normal text-muted-foreground">
+                  {" "}
+                  · encore {upcoming.pointsCost - customer.currentPoints} pour {upcoming.name}
+                </span>
+              ) : null}
             </p>
-            {customer.mode === "stamp" ? (
+
+            {/* En mode tampon on dessine les cases jusqu'au palier visé. Au-delà
+                de vingt, la rangée devient illisible : on bascule sur la barre. */}
+            {customer.mode === "stamp" && goal > 0 && goal <= 20 ? (
               <div className="mt-2 flex flex-wrap gap-1.5">
-                {Array.from({ length: customer.rewardThreshold }).map((_, index) => (
+                {Array.from({ length: goal }).map((_, index) => (
                   <span
                     key={index}
                     className={
@@ -163,26 +196,69 @@ export function ScanClient() {
                   />
                 ))}
               </div>
-            ) : (
+            ) : goal > 0 ? (
               <div className="mt-2 h-3 w-full overflow-hidden rounded-full bg-muted">
                 <div
-                  className="h-full rounded-full bg-accent"
-                  style={{
-                    width: `${Math.min(100, (customer.currentPoints / customer.rewardThreshold) * 100)}%`,
-                  }}
+                  className="h-full rounded-full bg-accent transition-[width] duration-500 ease-[var(--ease-out-soft)]"
+                  style={{ width: `${Math.min(100, (customer.currentPoints / goal) * 100)}%` }}
                 />
               </div>
-            )}
+            ) : null}
           </div>
 
-          {customer.availableRewards > 0 ? (
+          {redeemed ? <Alert variant="success">{redeemed}</Alert> : null}
+
+          {/* Catalogue : le client choisit, le commerçant valide. Les paliers
+              hors de portée restent visibles — ils donnent envie de revenir. */}
+          {tiers.length > 0 ? (
+            <div>
+              <p className="mb-2 text-sm font-semibold">
+                {affordable.length > 0
+                  ? `À échanger maintenant (${affordable.length})`
+                  : "Catalogue des récompenses"}
+              </p>
+              <ul className="divide-y divide-border overflow-hidden rounded-lg border border-border">
+                {tiers.map((tier) => {
+                  const reachable = tier.pointsCost <= customer.currentPoints;
+                  return (
+                    <li
+                      key={tier.id}
+                      className="flex items-center justify-between gap-3 px-3.5 py-2.5"
+                    >
+                      <span className={reachable ? "font-medium" : "text-muted-foreground"}>
+                        {tier.name}
+                        <span className="ml-2 text-sm text-muted-foreground">
+                          {tier.pointsCost} pts
+                        </span>
+                      </span>
+                      <Button
+                        size="sm"
+                        variant={reachable ? "accent" : "ghost"}
+                        disabled={!reachable || pending}
+                        onClick={() => handleRedeem(tier.id, tier.pointsCost)}
+                      >
+                        {reachable ? "Échanger" : `−${tier.pointsCost - customer.currentPoints}`}
+                      </Button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          ) : (
+            <Alert>
+              Aucune récompense configurée. Ajoutez-en dans Fidélité, sinon les points de vos
+              clients ne servent à rien.
+            </Alert>
+          )}
+
+          {customer.legacyRewards > 0 ? (
             <Alert variant="success">
               <span className="flex items-start gap-2">
                 <Gift className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
                 <span>
-                  {customer.availableRewards} récompense
-                  {customer.availableRewards > 1 ? "s" : ""} disponible
-                  {customer.availableRewards > 1 ? "s" : ""} — {customer.rewardName}
+                  {customer.legacyRewards} récompense{customer.legacyRewards > 1 ? "s" : ""} acquise
+                  {customer.legacyRewards > 1 ? "s" : ""} avant le passage aux paliers — à remettre
+                  depuis l&apos;onglet Récompenses.
                 </span>
               </span>
             </Alert>
@@ -199,12 +275,17 @@ export function ScanClient() {
                 {visit.result.pointsAdded}
               </p>
               <p className="mt-1.5 text-sm text-muted-foreground">
-                {visit.result.currentPoints} / {visit.result.rewardThreshold} points
+                {visit.result.currentPoints} point{visit.result.currentPoints > 1 ? "s" : ""} au
+                total
+                {visit.result.nextRewardName && visit.result.nextRewardCost !== null
+                  ? ` · encore ${visit.result.nextRewardCost - visit.result.currentPoints} pour ${visit.result.nextRewardName}`
+                  : ""}
               </p>
-              {visit.result.rewardsCreated > 0 ? (
+              {visit.result.affordableRewards > 0 ? (
                 <p className="mt-3 flex items-center justify-center gap-1.5 font-semibold text-accent">
                   <Gift className="h-4 w-4" aria-hidden />
-                  Nouvelle récompense disponible
+                  {visit.result.affordableRewards} récompense
+                  {visit.result.affordableRewards > 1 ? "s" : ""} à échanger
                 </p>
               ) : null}
               {visit.result.referralRewarded ? (

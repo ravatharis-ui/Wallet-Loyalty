@@ -3,18 +3,21 @@ import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { appUrl } from "@/lib/env";
 import { sendEmail } from "@/lib/email/send";
 import { rewardAvailableEmail } from "@/lib/email/templates";
-import { canSendEmails, shouldNotifyReward, subscriptionAccess } from "@/lib/loyalty";
-import type { Business, Customer, Message, Subscription } from "@/lib/db.types";
+import { canSendEmails, subscriptionAccess } from "@/lib/loyalty";
+import type { Business, Customer, Subscription } from "@/lib/db.types";
 
 /**
- * Notifie un client qu'une récompense est disponible, puis trace le message.
- * Ne renvoie jamais deux fois la même notification pour la même récompense.
+ * Prévient un client qu'il a assez de points pour échanger une récompense.
+ *
+ * La non-répétition repose sur `customers.reward_notified_at` : tant qu'il est
+ * renseigné, on se tait. La fonction SQL `redeem_reward` le remet à zéro, si
+ * bien que le client est de nouveau prévenu au palier suivant — et une seule
+ * fois par palier atteint.
  */
 export async function notifyRewardAvailable(params: {
   businessId: string;
   customerId: string;
   rewardName: string;
-  earnedAt: string;
 }): Promise<void> {
   const admin = createSupabaseAdminClient();
 
@@ -30,29 +33,9 @@ export async function notifyRewardAvailable(params: {
 
   if (!customer || !business || customer.business_id !== params.businessId) return;
   if (!customer.email) return;
+  if (customer.reward_notified_at) return;
   // Autorisé en découverte et sur abonnement en cours, coupé après expiration.
   if (!canSendEmails(subscriptionAccess(subscription ?? null))) return;
-
-  // Seuls les envois réussis empêchent un renvoi : un échec (Resend non
-  // configuré, domaine non vérifié, panne) doit pouvoir être rattrapé.
-  const { data: sentMessages } = await admin
-    .from("messages")
-    .select("type, created_at")
-    .eq("customer_id", customer.id)
-    .eq("type", "reward_available")
-    .eq("status", "sent")
-    .order("created_at", { ascending: false })
-    .limit(5)
-    .returns<Pick<Message, "type" | "created_at">[]>();
-
-  if (
-    !shouldNotifyReward(
-      { email: customer.email, sentMessages: sentMessages ?? [] },
-      params.earnedAt,
-    )
-  ) {
-    return;
-  }
 
   const rendered = rewardAvailableEmail({
     businessName: business.name,
@@ -76,4 +59,13 @@ export async function notifyRewardAvailable(params: {
     content: rendered.text,
     sent_at: result.ok ? new Date().toISOString() : null,
   });
+
+  // Un échec (Resend en panne, domaine non vérifié) ne doit pas condamner le
+  // client au silence : on ne pose le drapeau que sur un envoi réussi.
+  if (result.ok) {
+    await admin
+      .from("customers")
+      .update({ reward_notified_at: new Date().toISOString() })
+      .eq("id", customer.id);
+  }
 }

@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { Gift } from "lucide-react";
 import { getCardByToken } from "@/lib/public-data";
-import { progressLabel } from "@/lib/loyalty";
+import { affordableTiers, nextTier, progressLabel } from "@/lib/loyalty";
 import { QrCode } from "@/components/qr-code";
 import { Alert } from "@/components/ui/alert";
 import { AddToHomeScreen } from "@/components/add-to-home-screen";
@@ -30,19 +30,23 @@ export default async function CardPage({
   const data = await getCardByToken(token);
   if (!data) notFound();
 
-  const { customer, business, program, availableRewards } = data;
+  const { customer, business, program, tiers, availableRewards } = data;
   const rules = {
     mode: program?.mode ?? ("stamp" as const),
     points_per_visit: program?.points_per_visit ?? 1,
     points_per_euro: program?.points_per_euro ?? 1,
-    reward_threshold: program?.reward_threshold ?? 10,
   };
   const isAmountMode = rules.mode === "amount";
-  const threshold = rules.reward_threshold;
   const cardColor = safeCardColor(business.card_color);
   const cardText = readableTextColor(cardColor);
-  const points = Math.min(customer.current_points, threshold);
-  const hasReward = availableRewards.length > 0;
+
+  const reachable = affordableTiers(customer.current_points, tiers);
+  const upcoming = nextTier(customer.current_points, tiers);
+  // La jauge vise le prochain palier ; une fois le catalogue épuisé, le plus
+  // cher sert de repère pour ne pas afficher une barre sans fin.
+  const goal = upcoming?.points_cost ?? tiers[tiers.length - 1]?.points_cost ?? 0;
+  const stamps = Math.min(customer.current_points, goal);
+  const hasReward = reachable.length > 0 || availableRewards.length > 0;
 
   return (
     <main className="mx-auto flex min-h-dvh max-w-md flex-col px-5 py-8">
@@ -89,54 +93,50 @@ export default async function CardPage({
 
           <div className="mt-7">
             <p className="text-sm opacity-75">
-              {isAmountMode
-                ? `${customer.current_points} / ${threshold} points`
-                : `${points} / ${threshold} visites`}
+              {customer.current_points} point{customer.current_points > 1 ? "s" : ""}
+              {goal > 0 && upcoming ? ` sur ${goal} pour ${upcoming.name}` : ""}
             </p>
-            {isAmountMode ? (
-              <div
-                className="mt-3 h-3 w-full overflow-hidden rounded-full"
-                style={{ background: `${cardText}2e` }}
-                role="img"
-                aria-label={`${customer.current_points} points sur ${threshold}`}
-              >
-                <div
-                  className="h-full rounded-full transition-[width] duration-500 ease-[var(--ease-out-soft)]"
-                  style={{
-                    width: `${Math.min(100, (customer.current_points / threshold) * 100)}%`,
-                    background: cardText,
-                  }}
-                />
-              </div>
-            ) : (
+
+            {/* Les cases à tamponner ne tiennent que si le palier est court ;
+                au-delà, la barre reste lisible. */}
+            {!isAmountMode && goal > 0 && goal <= 20 ? (
               <div
                 className="mt-3 flex flex-wrap gap-2"
                 role="img"
-                aria-label={`${points} visites sur ${threshold}`}
+                aria-label={`${stamps} visites sur ${goal}`}
               >
-                {Array.from({ length: threshold }).map((_, index) => (
+                {Array.from({ length: goal }).map((_, index) => (
                   <span
                     key={index}
                     className="h-5 w-5 rounded-full"
                     style={{
-                      background: index < points ? cardText : "transparent",
+                      background: index < stamps ? cardText : "transparent",
                       border: `2px solid ${cardText}`,
-                      opacity: index < points ? 1 : 0.35,
+                      opacity: index < stamps ? 1 : 0.35,
                     }}
                   />
                 ))}
               </div>
-            )}
-            <p className="mt-5 font-medium">
-              {hasReward
-                ? "Votre récompense vous attend"
-                : progressLabel(customer.current_points, rules)}
-            </p>
-            {!hasReward && program ? (
-              // Sur fond coloré, la teinte doit venir de l'encre de la carte,
-              // jamais d'un gris de l'interface.
-              <p className="text-sm opacity-75">Objectif : {program.reward_name}</p>
+            ) : goal > 0 ? (
+              <div
+                className="mt-3 h-3 w-full overflow-hidden rounded-full"
+                style={{ background: `${cardText}2e` }}
+                role="img"
+                aria-label={`${customer.current_points} points sur ${goal}`}
+              >
+                <div
+                  className="h-full rounded-full transition-[width] duration-500 ease-[var(--ease-out-soft)]"
+                  style={{
+                    width: `${Math.min(100, (customer.current_points / goal) * 100)}%`,
+                    background: cardText,
+                  }}
+                />
+              </div>
             ) : null}
+
+            <p className="mt-5 font-medium">
+              {progressLabel(customer.current_points, rules, tiers)}
+            </p>
           </div>
 
           {hasReward ? (
@@ -146,17 +146,47 @@ export default async function CardPage({
             >
               <p className="flex items-center gap-2 font-semibold">
                 <Gift className="h-5 w-5" aria-hidden />
-                {availableRewards.length > 1
-                  ? `${availableRewards.length} récompenses disponibles`
+                {reachable.length + availableRewards.length > 1
+                  ? "Plusieurs récompenses à votre portée"
                   : "Récompense disponible"}
               </p>
               <p className="mt-1 text-sm opacity-90">
-                {availableRewards[0].reward_name} — présentez cette carte en caisse.
+                {reachable[reachable.length - 1]?.name ?? availableRewards[0]?.reward_name} —
+                présentez cette carte en caisse.
               </p>
             </div>
           ) : null}
         </div>
       </section>
+
+      {/* Le catalogue donne une raison de revenir : sans lui, le compteur de
+          points ne veut rien dire pour le client. */}
+      {tiers.length > 0 ? (
+        <section className="mt-6 rounded-card border border-border bg-surface p-6 shadow-xs">
+          <p className="text-sm font-semibold">Vos récompenses</p>
+          <ul className="mt-4 divide-y divide-border">
+            {tiers.map((tier) => {
+              const unlocked = tier.points_cost <= customer.current_points;
+              return (
+                <li key={tier.id} className="flex items-center justify-between gap-3 py-2.5">
+                  <span className={unlocked ? "font-medium" : "text-muted-foreground"}>
+                    {tier.name}
+                  </span>
+                  <span className="shrink-0 text-sm">
+                    {unlocked ? (
+                      <span className="font-semibold text-accent">Disponible</span>
+                    ) : (
+                      <span className="text-muted-foreground">
+                        {tier.points_cost - customer.current_points} pts restants
+                      </span>
+                    )}
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      ) : null}
 
       <section className="mt-6 flex flex-col items-center rounded-card border border-border bg-surface p-6 shadow-xs">
         <p className="text-sm font-semibold">Votre QR code personnel</p>

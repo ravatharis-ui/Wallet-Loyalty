@@ -24,8 +24,8 @@ const steps = [
   },
   {
     icon: Gift,
-    title: "Vous scannez, la récompense se déclenche seule",
-    text: "Vous ouvrez le scanner depuis votre téléphone, vous validez. Au seuil que vous avez fixé, la récompense apparaît des deux côtés.",
+    title: "Vous scannez, les points tombent",
+    text: "Vous ouvrez le scanner depuis votre téléphone, vous validez. Le client voit son solde monter, et ce qu'il peut déjà s'offrir.",
   },
   {
     icon: MailCheck,
@@ -37,6 +37,7 @@ const steps = [
 const included = [
   "Clients, visites et récompenses illimités",
   "Carte digitale à vos couleurs, avec votre logo",
+  "Catalogue de récompenses à plusieurs paliers",
   "Scanner depuis votre téléphone, sans matériel",
   "Relances automatiques à 30 et 60 jours",
   "Campagnes email vers vos clients",

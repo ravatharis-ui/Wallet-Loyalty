@@ -82,15 +82,16 @@ export const loyaltyProgramSchema = z.object({
       return Math.round(Math.min(1_000_000, amount) * 100);
     }),
   referralMonthlyLimit: z.coerce.number().int().min(0).max(1000).default(0),
-  rewardThreshold: z.coerce.number().int().min(1).max(1000),
-  rewardName: trimmed(2, 80),
-  rewardDescription: z
-    .string()
-    .trim()
-    .max(300)
-    .optional()
-    .transform((v) => (v && v.length > 0 ? v : null)),
   active: z.coerce.boolean().optional().default(true),
+});
+
+/**
+ * Un palier du catalogue. Le coût est exprimé dans l'unité du programme :
+ * des visites en mode tampon, des points en mode montant.
+ */
+export const rewardTierSchema = z.object({
+  name: trimmed(2, 80),
+  pointsCost: z.coerce.number().int().min(1).max(100_000),
 });
 
 /** Code de parrainage : 8 caractères hexadécimaux, sans valeur d'accès. */
@@ -149,6 +150,7 @@ export const campaignSchema = z.object({
 export type JoinInput = z.infer<typeof joinSchema>;
 export type LoyaltyProgramInput = z.infer<typeof loyaltyProgramSchema>;
 export type CampaignInput = z.infer<typeof campaignSchema>;
+export type RewardTierInput = z.infer<typeof rewardTierSchema>;
 
 /** Extrait le premier message d'erreur lisible d'un ZodError. */
 export function firstError(error: z.ZodError): string {

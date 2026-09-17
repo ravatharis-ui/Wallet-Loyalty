@@ -11,6 +11,7 @@ interface RewardRow {
   id: string;
   reward_name: string;
   status: string;
+  points_spent: number;
   earned_at: string;
   redeemed_at: string | null;
   customers: { first_name: string; phone: string } | null;
@@ -23,14 +24,18 @@ export default async function RewardsPage() {
   const [{ data: available }, { data: redeemed }] = await Promise.all([
     supabase
       .from("rewards")
-      .select("id, reward_name, status, earned_at, redeemed_at, customers(first_name, phone)")
+      .select(
+        "id, reward_name, status, points_spent, earned_at, redeemed_at, customers(first_name, phone)",
+      )
       .eq("business_id", session.businessId)
       .eq("status", "available")
       .order("earned_at", { ascending: true })
       .returns<RewardRow[]>(),
     supabase
       .from("rewards")
-      .select("id, reward_name, status, earned_at, redeemed_at, customers(first_name, phone)")
+      .select(
+        "id, reward_name, status, points_spent, earned_at, redeemed_at, customers(first_name, phone)",
+      )
       .eq("business_id", session.businessId)
       .eq("status", "redeemed")
       .order("redeemed_at", { ascending: false })
@@ -42,13 +47,18 @@ export default async function RewardsPage() {
     <div className="space-y-8">
       <header>
         <h1 className="text-3xl font-semibold tracking-[-0.03em]">Récompenses</h1>
-        <p className="text-sm text-muted-foreground">
-          Quand un client présente sa récompense, marquez-la comme utilisée.
+        <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
+          Les échanges se font depuis le scanner, au moment où le client est devant vous. Cette page
+          en garde la trace.
         </p>
       </header>
 
       <section className="space-y-3">
-        <h2 className="font-semibold">Disponibles ({available?.length ?? 0})</h2>
+        <h2 className="font-semibold">En attente de remise ({available?.length ?? 0})</h2>
+        <p className="text-sm leading-relaxed text-muted-foreground">
+          Récompenses acquises avant le passage au catalogue de paliers. Elles restent dues :
+          cochez-les quand le client en profite.
+        </p>
         {available && available.length > 0 ? (
           available.map((reward) => (
             <Card key={reward.id} className="flex flex-wrap items-center justify-between gap-3">
@@ -76,7 +86,9 @@ export default async function RewardsPage() {
               <div>
                 <p className="font-medium">{reward.customers?.first_name ?? "Client supprimé"}</p>
                 <p className="text-sm text-muted-foreground">
-                  {reward.reward_name} · utilisée le {formatDateTime(reward.redeemed_at)}
+                  {reward.reward_name}
+                  {reward.points_spent > 0 ? ` · ${reward.points_spent} points` : ""} · échangée le{" "}
+                  {formatDateTime(reward.redeemed_at)}
                 </p>
               </div>
               <Badge variant="success">Utilisée</Badge>

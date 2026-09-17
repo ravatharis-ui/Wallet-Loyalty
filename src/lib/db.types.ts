@@ -62,12 +62,28 @@ export interface LoyaltyProgram {
   referral_min_amount_cents: number;
   /** Parrainages récompensés par client sur 30 jours. Zéro = illimité. */
   referral_monthly_limit: number;
+  /**
+   * Héritage du modèle à seuil unique, conservé en base pour ne rien casser.
+   * Les récompenses vivent désormais dans `reward_tiers` : ne plus lire ces
+   * deux colonnes depuis l'application.
+   */
   reward_threshold: number;
   reward_name: string;
   reward_description: string | null;
   active: boolean;
   created_at: string;
   updated_at: string;
+}
+
+/** Un palier du catalogue de récompenses d'un commerce. */
+export interface RewardTier {
+  id: string;
+  business_id: string;
+  name: string;
+  points_cost: number;
+  position: number;
+  active: boolean;
+  created_at: string;
 }
 
 export interface Customer {
@@ -83,6 +99,8 @@ export interface Customer {
   referred_by: string | null;
   /** Date de versement du bonus de parrainage, nulle s'il n'a pas été versé. */
   referral_rewarded_at: string | null;
+  /** Dernière fois que le client a été prévenu qu'il pouvait échanger. */
+  reward_notified_at: string | null;
   total_visits: number;
   current_points: number;
   last_visit_at: string | null;
@@ -106,8 +124,11 @@ export interface Reward {
   business_id: string;
   customer_id: string;
   loyalty_program_id: string;
+  reward_tier_id: string | null;
   status: RewardStatus;
   reward_name: string;
+  /** Points débités lors de l'échange. */
+  points_spent: number;
   earned_at: string;
   redeemed_at: string | null;
   expires_at: string | null;
@@ -155,10 +176,18 @@ export interface AddVisitResult {
   first_name: string;
   current_points: number;
   total_visits: number;
-  reward_threshold: number;
   points_added: number;
-  rewards_created: number;
+  /** Nombre de paliers que le solde permet d'échanger immédiatement. */
+  affordable_rewards: number;
+  /** Prochain palier hors de portée, s'il en reste un. */
+  next_reward_name: string | null;
+  next_reward_cost: number | null;
   referral_rewarded: boolean;
   /** Motif de non-versement : « min_amount », « monthly_limit », ou null. */
   referral_note: "min_amount" | "monthly_limit" | null;
 }
+
+/** Résultat de l'échange d'un palier au comptoir. */
+export type RedeemResult =
+  | { ok: true; reward_name: string; points_spent: number; current_points: number }
+  | { ok: false; reason: "insufficient_points"; current_points: number; points_cost: number };

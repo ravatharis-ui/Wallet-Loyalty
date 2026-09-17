@@ -60,10 +60,12 @@ run("isolation entre commerces (RLS)", () => {
       business_id: business!.id,
       name: "Test",
       points_per_visit: 1,
-      reward_threshold: 3,
-      reward_name: "Récompense test",
       active: true,
     });
+
+    await admin
+      .from("reward_tiers")
+      .insert({ business_id: business!.id, name: "Récompense test", points_cost: 3 });
 
     await admin.from("subscriptions").insert({ business_id: business!.id, status: "active" });
 
@@ -173,6 +175,7 @@ run("add_visit (RPC atomique)", () => {
   let admin: SupabaseClient;
   let businessId: string;
   let customerId: string;
+  let tierId: string;
 
   beforeAll(async () => {
     admin = createClient(url!, serviceKey!, {
@@ -191,11 +194,16 @@ run("add_visit (RPC atomique)", () => {
       business_id: businessId,
       name: "Test",
       points_per_visit: 1,
-      reward_threshold: 3,
-      reward_name: "3e café offert",
       referral_points: 2,
       active: true,
     });
+
+    const { data: tier } = await admin
+      .from("reward_tiers")
+      .insert({ business_id: businessId, name: "3e café offert", points_cost: 3 })
+      .select("id")
+      .single();
+    tierId = tier!.id;
 
     const { data: customer } = await admin
       .from("customers")
@@ -213,7 +221,7 @@ run("add_visit (RPC atomique)", () => {
     if (admin && businessId) await admin.from("businesses").delete().eq("id", businessId);
   });
 
-  it("incrémente les points et crée la récompense au seuil", async () => {
+  it("cumule les points sans jamais les consommer", async () => {
     // Fenêtre anti-doublon neutralisée pour enchaîner les visites dans le test.
     for (let i = 0; i < 2; i++) {
       await admin.rpc("add_visit", {
@@ -229,16 +237,82 @@ run("add_visit (RPC atomique)", () => {
       p_dedupe_seconds: 0,
     });
 
-    expect(third.rewards_created).toBe(1);
     expect(third.total_visits).toBe(3);
-    expect(third.current_points).toBe(0);
+    expect(third.current_points).toBe(3);
+    // Le palier est atteint, mais rien n'est débité tant que le client n'a
+    // pas décidé d'échanger.
+    expect(third.affordable_rewards).toBe(1);
 
     const { count } = await admin
       .from("rewards")
       .select("id", { count: "exact", head: true })
+      .eq("customer_id", customerId);
+    expect(count).toBe(0);
+  }, 30_000);
+
+  it("débite les points à l'échange, et une seule fois", async () => {
+    const before = await admin
+      .from("customers")
+      .select("current_points")
+      .eq("id", customerId)
+      .single();
+
+    const { data: first } = await admin.rpc("redeem_reward", {
+      p_customer_id: customerId,
+      p_business_id: businessId,
+      p_tier_id: tierId,
+    });
+
+    expect(first.ok).toBe(true);
+    expect(first.points_spent).toBe(3);
+    expect(first.current_points).toBe(before.data!.current_points - 3);
+
+    const { data: reward } = await admin
+      .from("rewards")
+      .select("status, points_spent, reward_name")
       .eq("customer_id", customerId)
-      .eq("status", "available");
-    expect(count).toBe(1);
+      .single();
+    expect(reward!.status).toBe("redeemed");
+    expect(reward!.points_spent).toBe(3);
+
+    // Le solde est retombé sous le coût : un second échange doit être refusé.
+    const { data: second } = await admin.rpc("redeem_reward", {
+      p_customer_id: customerId,
+      p_business_id: businessId,
+      p_tier_id: tierId,
+    });
+    expect(second.ok).toBe(false);
+    expect(second.reason).toBe("insufficient_points");
+  }, 30_000);
+
+  it("remet le drapeau de notification à zéro après un échange", async () => {
+    // Sans cette remise à zéro, le client ne serait plus jamais prévenu qu'il
+    // peut échanger de nouveau.
+    await admin
+      .from("customers")
+      .update({ reward_notified_at: new Date().toISOString() })
+      .eq("id", customerId);
+
+    for (let i = 0; i < 3; i++) {
+      await admin.rpc("add_visit", {
+        p_customer_id: customerId,
+        p_business_id: businessId,
+        p_dedupe_seconds: 0,
+      });
+    }
+
+    await admin.rpc("redeem_reward", {
+      p_customer_id: customerId,
+      p_business_id: businessId,
+      p_tier_id: tierId,
+    });
+
+    const { data } = await admin
+      .from("customers")
+      .select("reward_notified_at")
+      .eq("id", customerId)
+      .single();
+    expect(data!.reward_notified_at).toBeNull();
   }, 30_000);
 
   it("ignore un double clic dans la fenêtre anti-doublon", async () => {
@@ -294,8 +368,6 @@ run("parrainage", () => {
       business_id: businessId,
       name: "Test",
       points_per_visit: 1,
-      reward_threshold: 100,
-      reward_name: "Récompense",
       referral_points: 5,
       active: true,
     });
@@ -467,8 +539,6 @@ run("garde-fous du parrainage", () => {
       mode: "amount",
       points_per_euro: 1,
       points_per_visit: 1,
-      reward_threshold: 1000,
-      reward_name: "Récompense",
       referral_points: 5,
       referral_min_amount_cents: MIN_AMOUNT_CENTS,
       referral_monthly_limit: MONTHLY_LIMIT,

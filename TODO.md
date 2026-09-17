@@ -137,6 +137,14 @@ Les six migrations du dossier `supabase/migrations/` sont en place sur le projet
 de production. Toute nouvelle migration s'ajoute ici tant qu'elle n'est pas
 exécutée dans le SQL Editor.
 
+- [ ] **Migration `20260107000000_reward_tiers.sql`** : catalogue de paliers.
+      Les points ne sont plus consommés automatiquement ; le client choisit ce
+      qu'il échange, et l'échange se fait depuis le scanner. Remplace `add_visit`
+      et ajoute `redeem_reward` — à appliquer après `20260106000000`.
+      **Sans elle, l'enregistrement des visites échoue.** La migration reprend
+      le seuil unique de chaque programme comme premier palier : aucun commerce
+      ne perd sa configuration.
+
 - [x] ~~Migration `20260106000000_referral_guards.sql`~~ : garde-fous du
       parrainage (achat minimum, plafond mensuel), appliquée.
 

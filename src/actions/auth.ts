@@ -90,14 +90,19 @@ export async function signupAction(_prev: ActionState, formData: FormData): Prom
       return { error: "Impossible de finaliser le compte. Réessayez." };
     }
 
-    // Programme de fidélité par défaut, modifiable immédiatement.
+    // Programme et catalogue par défaut, modifiables immédiatement. Un compte
+    // livré avec un catalogue vide donnerait des points qui ne servent à rien.
     await admin.from("loyalty_programs").insert({
       business_id: business.id,
       name: "Ma fidélité",
       points_per_visit: 1,
-      reward_threshold: 10,
-      reward_name: "1 récompense offerte",
       active: true,
+    });
+
+    await admin.from("reward_tiers").insert({
+      business_id: business.id,
+      name: "1 récompense offerte",
+      points_cost: 10,
     });
 
     // Mode découverte : tout fonctionne, plafonné à FREE_TIER_CUSTOMER_LIMIT

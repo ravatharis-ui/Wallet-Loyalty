@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { shouldSendInactivityReminder, shouldNotifyReward } from "@/lib/loyalty";
+import { shouldSendInactivityReminder } from "@/lib/loyalty";
 
 const now = new Date("2026-03-01T12:00:00Z");
 const daysAgo = (days: number) => new Date(now.getTime() - days * 86_400_000).toISOString();
@@ -99,43 +99,6 @@ describe("relance d'inactivité", () => {
   });
 });
 
-describe("notification de récompense", () => {
-  it("notifie une récompense fraîchement gagnée", () => {
-    expect(shouldNotifyReward({ email: "client@example.com", sentMessages: [] }, daysAgo(0))).toBe(
-      true,
-    );
-  });
-
-  it("ne notifie pas deux fois la même récompense", () => {
-    const earnedAt = daysAgo(2);
-    expect(
-      shouldNotifyReward(
-        {
-          email: "client@example.com",
-          sentMessages: [{ type: "reward_available", created_at: daysAgo(2) }],
-        },
-        earnedAt,
-      ),
-    ).toBe(false);
-  });
-
-  it("notifie une nouvelle récompense gagnée après la précédente notification", () => {
-    expect(
-      shouldNotifyReward(
-        {
-          email: "client@example.com",
-          sentMessages: [{ type: "reward_available", created_at: daysAgo(40) }],
-        },
-        daysAgo(1),
-      ),
-    ).toBe(true);
-  });
-
-  it("ne notifie pas un client sans email", () => {
-    expect(shouldNotifyReward({ email: null, sentMessages: [] }, daysAgo(0))).toBe(false);
-  });
-});
-
 describe("rattrapage après un échec d'envoi", () => {
   /**
    * Un envoi qui a échoué (Resend non configuré, domaine non vérifié, panne)
@@ -158,21 +121,24 @@ describe("rattrapage après un échec d'envoi", () => {
     ).toBe(true);
   });
 
-  it("renotifie une récompense dont la notification avait échoué", () => {
-    expect(shouldNotifyReward({ email: "client@example.com", sentMessages: [] }, daysAgo(3))).toBe(
-      true,
-    );
-  });
-
-  it("ne renvoie rien tant qu'un envoi a réussi", () => {
+  it("ne relance plus une fois qu'un envoi a réussi", () => {
     expect(
-      shouldNotifyReward(
+      shouldSendInactivityReminder(
         {
+          lastVisitAt: daysAgo(35),
           email: "client@example.com",
-          sentMessages: [{ type: "reward_available", created_at: daysAgo(2) }],
+          sentMessages: [{ type: "inactive_30_days", created_at: daysAgo(2) }],
         },
-        daysAgo(3),
+        "inactive_30_days",
+        now,
       ),
     ).toBe(false);
   });
 });
+
+/**
+ * La notification « vous pouvez échanger » ne passe plus par une fonction pure :
+ * elle s'appuie sur `customers.reward_notified_at`, remis à zéro par la
+ * fonction SQL `redeem_reward`. Son comportement est couvert par la suite
+ * d'intégration, qui seule peut observer la base.
+ */

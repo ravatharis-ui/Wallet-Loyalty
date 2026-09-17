@@ -4,6 +4,7 @@ import {
   cardTokenSchema,
   loyaltyProgramSchema,
   campaignSchema,
+  rewardTierSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
   firstError,
@@ -70,15 +71,12 @@ describe("programme de fidélité", () => {
     const result = loyaltyProgramSchema.safeParse({
       name: "Ma fidélité",
       pointsPerVisit: "1",
-      rewardThreshold: "10",
-      rewardName: "1 café offert",
-      rewardDescription: "",
       active: true,
     });
     expect(result.success).toBe(true);
     if (result.success) {
-      expect(result.data.rewardThreshold).toBe(10);
-      expect(result.data.rewardDescription).toBeNull();
+      expect(result.data.pointsPerVisit).toBe(1);
+      expect(result.data.mode).toBe("stamp");
     }
   });
 
@@ -88,8 +86,6 @@ describe("programme de fidélité", () => {
       mode: "amount",
       pointsPerVisit: "1",
       pointsPerEuro: "1",
-      rewardThreshold: "100",
-      rewardName: "10 € offerts",
       referralPoints: "50",
       referralMinAmount: "20,50",
       referralMonthlyLimit: "3",
@@ -106,8 +102,6 @@ describe("programme de fidélité", () => {
     const base = {
       name: "Ma fidélité",
       pointsPerVisit: "1",
-      rewardThreshold: "10",
-      rewardName: "1 café offert",
       active: true,
     };
     for (const value of ["", "   ", "abc", "-5"]) {
@@ -121,8 +115,6 @@ describe("programme de fidélité", () => {
     const base = {
       name: "Ma fidélité",
       pointsPerVisit: "1",
-      rewardThreshold: "10",
-      rewardName: "1 café offert",
       active: true,
     };
     expect(loyaltyProgramSchema.safeParse({ ...base, referralMonthlyLimit: "-1" }).success).toBe(
@@ -133,15 +125,32 @@ describe("programme de fidélité", () => {
     );
   });
 
-  it("refuse un seuil nul ou négatif", () => {
-    const base = {
-      name: "Ma fidélité",
-      pointsPerVisit: "1",
-      rewardName: "1 café offert",
-      active: true,
-    };
-    expect(loyaltyProgramSchema.safeParse({ ...base, rewardThreshold: "0" }).success).toBe(false);
-    expect(loyaltyProgramSchema.safeParse({ ...base, rewardThreshold: "-5" }).success).toBe(false);
+  it("refuse un barème nul ou négatif", () => {
+    const base = { name: "Ma fidélité", active: true };
+    expect(loyaltyProgramSchema.safeParse({ ...base, pointsPerVisit: "0" }).success).toBe(false);
+    expect(loyaltyProgramSchema.safeParse({ ...base, pointsPerVisit: "-5" }).success).toBe(false);
+  });
+});
+
+describe("palier de récompense", () => {
+  it("accepte un palier nommé et chiffré", () => {
+    const result = rewardTierSchema.safeParse({ name: "Un café offert", pointsCost: "10" });
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.pointsCost).toBe(10);
+  });
+
+  it("refuse un coût nul : un palier gratuit viderait le programme de son sens", () => {
+    expect(rewardTierSchema.safeParse({ name: "Un café", pointsCost: "0" }).success).toBe(false);
+    expect(rewardTierSchema.safeParse({ name: "Un café", pointsCost: "-3" }).success).toBe(false);
+  });
+
+  it("refuse un nom vide ou trop court", () => {
+    expect(rewardTierSchema.safeParse({ name: " ", pointsCost: "10" }).success).toBe(false);
+    expect(rewardTierSchema.safeParse({ name: "a", pointsCost: "10" }).success).toBe(false);
+  });
+
+  it("refuse un coût non numérique", () => {
+    expect(rewardTierSchema.safeParse({ name: "Un café", pointsCost: "dix" }).success).toBe(false);
   });
 });
 

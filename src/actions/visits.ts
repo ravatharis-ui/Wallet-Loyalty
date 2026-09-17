@@ -5,7 +5,13 @@ import { requireMerchant } from "@/lib/auth";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { cardTokenSchema, uuidSchema, amountSchema } from "@/lib/validation";
 import { notifyRewardAvailable } from "@/lib/email/notify";
-import type { AddVisitResult, Customer, LoyaltyProgram, Reward } from "@/lib/db.types";
+import type {
+  AddVisitResult,
+  Customer,
+  LoyaltyProgram,
+  RedeemResult,
+  RewardTier,
+} from "@/lib/db.types";
 
 export interface CustomerSummary {
   id: string;
@@ -16,9 +22,13 @@ export interface CustomerSummary {
   currentPoints: number;
   totalVisits: number;
   lastVisitAt: string | null;
-  rewardThreshold: number;
-  rewardName: string;
-  availableRewards: number;
+  /** Catalogue du commerce, du moins cher au plus cher. */
+  tiers: { id: string; name: string; pointsCost: number }[];
+  /**
+   * Récompenses acquises sous l'ancien modèle à seuil unique, pas encore
+   * utilisées. Elles restent dues au client et s'échangent depuis Récompenses.
+   */
+  legacyRewards: number;
 }
 
 export interface LookupResult {
@@ -31,7 +41,7 @@ async function buildSummary(
   businessId: string,
   customer: Customer,
 ): Promise<LookupResult> {
-  const [{ data: program }, { count }] = await Promise.all([
+  const [{ data: program }, { count }, { data: tiers }] = await Promise.all([
     supabase
       .from("loyalty_programs")
       .select("*")
@@ -43,6 +53,13 @@ async function buildSummary(
       .select("id", { count: "exact", head: true })
       .eq("customer_id", customer.id)
       .eq("status", "available"),
+    supabase
+      .from("reward_tiers")
+      .select("*")
+      .eq("business_id", businessId)
+      .eq("active", true)
+      .order("points_cost", { ascending: true })
+      .returns<RewardTier[]>(),
   ]);
 
   if (!program) {
@@ -58,9 +75,12 @@ async function buildSummary(
       currentPoints: customer.current_points,
       totalVisits: customer.total_visits,
       lastVisitAt: customer.last_visit_at,
-      rewardThreshold: program.reward_threshold,
-      rewardName: program.reward_name,
-      availableRewards: count ?? 0,
+      tiers: (tiers ?? []).map((tier) => ({
+        id: tier.id,
+        name: tier.name,
+        pointsCost: tier.points_cost,
+      })),
+      legacyRewards: count ?? 0,
     },
   };
 }
@@ -115,9 +135,10 @@ export interface AddVisitState {
     firstName: string;
     currentPoints: number;
     totalVisits: number;
-    rewardThreshold: number;
     pointsAdded: number;
-    rewardsCreated: number;
+    affordableRewards: number;
+    nextRewardName: string | null;
+    nextRewardCost: number | null;
     referralRewarded: boolean;
     referralNote: "min_amount" | "monthly_limit" | null;
   };
@@ -174,24 +195,26 @@ export async function addVisitAction(customerId: string, amount?: string): Promi
 
   const result = data as AddVisitResult;
 
-  if (result.rewards_created > 0) {
-    const { data: reward } = await supabase
-      .from("rewards")
-      .select("*")
-      .eq("customer_id", result.customer_id)
-      .eq("status", "available")
-      .order("earned_at", { ascending: false })
+  // Le client vient d'avoir de quoi échanger : on le prévient une fois, et
+  // `notifyRewardAvailable` se charge de ne pas se répéter.
+  if (result.affordable_rewards > 0) {
+    const { data: best } = await supabase
+      .from("reward_tiers")
+      .select("name")
+      .eq("business_id", session.businessId)
+      .eq("active", true)
+      .lte("points_cost", result.current_points)
+      .order("points_cost", { ascending: false })
       .limit(1)
-      .maybeSingle<Reward>();
+      .maybeSingle<{ name: string }>();
 
-    if (reward) {
+    if (best) {
       // L'email ne doit jamais faire échouer l'enregistrement de la visite.
       try {
         await notifyRewardAvailable({
           businessId: session.businessId,
           customerId: result.customer_id,
-          rewardName: reward.reward_name,
-          earnedAt: reward.earned_at,
+          rewardName: best.name,
         });
       } catch {
         // tracé par la table messages si l'insertion a eu lieu
@@ -209,9 +232,10 @@ export async function addVisitAction(customerId: string, amount?: string): Promi
       firstName: result.first_name,
       currentPoints: result.current_points,
       totalVisits: result.total_visits,
-      rewardThreshold: result.reward_threshold,
       pointsAdded: result.points_added,
-      rewardsCreated: result.rewards_created,
+      affordableRewards: result.affordable_rewards,
+      nextRewardName: result.next_reward_name,
+      nextRewardCost: result.next_reward_cost,
       referralRewarded: result.referral_rewarded,
       referralNote: result.referral_note,
     },
@@ -223,4 +247,55 @@ function extractToken(raw: string): string {
   const value = raw.trim();
   const match = value.match(/([a-f0-9]{32})/i);
   return match ? match[1].toLowerCase() : value;
+}
+
+export interface RedeemTierState {
+  error?: string;
+  success?: string;
+}
+
+/**
+ * Échange un palier contre les points du client.
+ *
+ * Tout se joue dans `redeem_reward` : verrou sur la ligne client, contrôle du
+ * solde et débit dans la même transaction. Deux commerçants qui valident en
+ * même temps ne peuvent pas offrir deux fois la même récompense.
+ */
+export async function redeemTierAction(
+  customerId: string,
+  tierId: string,
+): Promise<RedeemTierState> {
+  const session = await requireMerchant();
+
+  const customer = uuidSchema.safeParse(customerId);
+  const tier = uuidSchema.safeParse(tierId);
+  if (!customer.success || !tier.success) return { error: "Échange impossible." };
+
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("redeem_reward", {
+    p_customer_id: customer.data,
+    p_business_id: session.businessId,
+    p_tier_id: tier.data,
+  });
+
+  if (error) {
+    if (error.message.includes("tier_not_found")) return { error: "Récompense introuvable." };
+    if (error.message.includes("customer_not_found")) return { error: "Client introuvable." };
+    return { error: "Échange impossible. Réessayez." };
+  }
+
+  const result = data as RedeemResult;
+  if (!result.ok) {
+    return {
+      error: `Il manque ${result.points_cost - result.current_points} points pour cette récompense.`,
+    };
+  }
+
+  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/rewards");
+  revalidatePath("/dashboard/customers");
+
+  return {
+    success: `${result.reward_name} échangé pour ${result.points_spent} points. Il reste ${result.current_points} points.`,
+  };
 }

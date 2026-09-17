@@ -1,6 +1,13 @@
 import Link from "next/link";
 import { Gift, ScanLine, ArrowRight } from "lucide-react";
-import { DEMO_BUSINESS, DEMO_STATS, DEMO_VISITS, DEMO_INACTIVE, DEMO_CARD } from "@/lib/demo-data";
+import {
+  DEMO_BUSINESS,
+  DEMO_STATS,
+  DEMO_VISITS,
+  DEMO_INACTIVE,
+  DEMO_CARD,
+  DEMO_TIERS,
+} from "@/lib/demo-data";
 import { VisitsChart } from "@/components/visits-chart";
 import { growthPercent } from "@/lib/visits-history";
 import { Card, CardLabel } from "@/components/ui/card";
@@ -56,7 +63,8 @@ export default function DemoPage() {
             </h1>
           </div>
           <p className="text-sm text-muted-foreground">
-            {DEMO_BUSINESS.program.threshold} visites = {DEMO_BUSINESS.program.rewardName}
+            {DEMO_TIERS.length} récompenses au catalogue, à partir de {DEMO_TIERS[0].pointsCost}{" "}
+            visites
           </p>
         </div>
 
@@ -135,11 +143,28 @@ export default function DemoPage() {
                 businessName={DEMO_BUSINESS.name}
                 firstName={DEMO_CARD.firstName}
                 points={DEMO_CARD.points}
-                threshold={DEMO_BUSINESS.program.threshold}
+                threshold={DEMO_TIERS[0].pointsCost}
                 color={color}
-                rewardName={DEMO_BUSINESS.program.rewardName.toLowerCase()}
+                rewardName={DEMO_TIERS[0].name.toLowerCase()}
               />
             </div>
+
+            <Card>
+              <p className="text-sm font-semibold">Votre catalogue</p>
+              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                Le client cumule des points et choisit quand il les dépense.
+              </p>
+              <ul className="mt-4 divide-y divide-border">
+                {DEMO_TIERS.map((tier) => (
+                  <li key={tier.name} className="flex items-center justify-between gap-3 py-2.5">
+                    <span className="text-sm">{tier.name}</span>
+                    <span className="shrink-0 text-sm text-muted-foreground">
+                      {tier.pointsCost} pts
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </Card>
           </div>
         </div>
 

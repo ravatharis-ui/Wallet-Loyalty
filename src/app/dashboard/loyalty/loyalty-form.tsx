@@ -4,7 +4,7 @@ import { useActionState, useState } from "react";
 import { saveLoyaltyProgramAction, type ActionState } from "@/actions/loyalty";
 import type { LoyaltyMode, LoyaltyProgram } from "@/lib/db.types";
 import { Card } from "@/components/ui/card";
-import { Input, Textarea } from "@/components/ui/input";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert } from "@/components/ui/alert";
 import { SubmitButton } from "@/components/submit-button";
@@ -28,9 +28,7 @@ const modes: { value: LoyaltyMode; title: string; description: string }[] = [
 export function LoyaltyForm({ program }: { program: LoyaltyProgram | null }) {
   const [state, formAction] = useActionState<ActionState, FormData>(saveLoyaltyProgramAction, {});
   const [mode, setMode] = useState<LoyaltyMode>(program?.mode ?? "stamp");
-  const [threshold, setThreshold] = useState(program?.reward_threshold ?? 10);
   const [perEuro, setPerEuro] = useState(program?.points_per_euro ?? 1);
-  const [rewardName, setRewardName] = useState(program?.reward_name ?? "1 café offert");
   const [referralPoints, setReferralPoints] = useState(program?.referral_points ?? 0);
   const [referralMinAmount, setReferralMinAmount] = useState(
     program?.referral_min_amount_cents ? String(program.referral_min_amount_cents / 100) : "",
@@ -87,19 +85,6 @@ export function LoyaltyForm({ program }: { program: LoyaltyProgram | null }) {
                 required
               />
             </div>
-            <div>
-              <Label htmlFor="rewardThreshold">Tampons pour une récompense</Label>
-              <Input
-                id="rewardThreshold"
-                name="rewardThreshold"
-                type="number"
-                min={1}
-                max={1000}
-                value={threshold}
-                onChange={(event) => setThreshold(Number(event.target.value))}
-                required
-              />
-            </div>
           </div>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2">
@@ -116,42 +101,8 @@ export function LoyaltyForm({ program }: { program: LoyaltyProgram | null }) {
                 required
               />
             </div>
-            <div>
-              <Label htmlFor="rewardThreshold">Points pour une récompense</Label>
-              <Input
-                id="rewardThreshold"
-                name="rewardThreshold"
-                type="number"
-                min={1}
-                max={1000}
-                value={threshold}
-                onChange={(event) => setThreshold(Number(event.target.value))}
-                required
-              />
-            </div>
           </div>
         )}
-
-        <div>
-          <Label htmlFor="rewardName">Récompense</Label>
-          <Input
-            id="rewardName"
-            name="rewardName"
-            value={rewardName}
-            onChange={(event) => setRewardName(event.target.value)}
-            required
-          />
-        </div>
-
-        <div>
-          <Label htmlFor="rewardDescription">Description (facultatif)</Label>
-          <Textarea
-            id="rewardDescription"
-            name="rewardDescription"
-            defaultValue={program?.reward_description ?? ""}
-            placeholder="Valable sur place, hors formules."
-          />
-        </div>
 
         <div>
           <Label htmlFor="referralPoints">Bonus de parrainage</Label>
@@ -230,25 +181,13 @@ export function LoyaltyForm({ program }: { program: LoyaltyProgram | null }) {
         </label>
       </Card>
 
-      <Card className="bg-muted">
+      <Card variant="flat">
         <p className="text-sm font-medium">Aperçu pour vos clients</p>
         <p className="mt-1 text-lg font-semibold">
-          {mode === "stamp" ? (
-            <>
-              {threshold} visite{threshold > 1 ? "s" : ""} = {rewardName || "votre récompense"}
-            </>
-          ) : (
-            <>
-              {threshold} points = {rewardName || "votre récompense"}
-            </>
-          )}
+          {mode === "stamp"
+            ? "Un tampon à chaque passage, à dépenser dans le catalogue."
+            : `${perEuro} point${perEuro > 1 ? "s" : ""} par euro dépensé, à dépenser dans le catalogue.`}
         </p>
-        {mode === "amount" ? (
-          <p className="mt-1 text-sm text-muted-foreground">
-            Soit {Math.ceil(threshold / Math.max(1, perEuro))} € dépensés, à raison de {perEuro}{" "}
-            point{perEuro > 1 ? "s" : ""} par euro.
-          </p>
-        ) : null}
         {referralPoints > 0 ? (
           <p className="mt-2 text-sm text-muted-foreground">
             Parrainage : {referralPoints} points pour le parrain et pour le filleul

@@ -16,6 +16,13 @@ export const DEMO_BUSINESS = {
   },
 } as const;
 
+/** Catalogue de la boutique de démonstration, du plus accessible au plus rare. */
+export const DEMO_TIERS = [
+  { name: "Une paire de boucles d'oreilles", pointsCost: 8 },
+  { name: "Un foulard en soie", pointsCost: 20 },
+  { name: "Un sac de la collection", pointsCost: 45 },
+] as const;
+
 export const DEMO_STATS = {
   customers: 247,
   visitsThisMonth: 138,

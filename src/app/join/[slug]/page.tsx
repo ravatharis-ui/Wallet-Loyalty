@@ -29,7 +29,9 @@ export default async function JoinPage({
     ? await getReferrerFirstName(data.business.id, referralCode)
     : null;
 
-  const { business, program } = data;
+  const { business, program, tiers } = data;
+  // On n'annonce que la première marche : c'est elle qui décide de l'inscription.
+  const cheapest = tiers[0] ?? null;
   const cardColor = safeCardColor(business.card_color);
   const cardText = readableTextColor(cardColor);
 
@@ -57,12 +59,13 @@ export default async function JoinPage({
           ) : null}
           <h1 className="font-display text-4xl leading-none">{business.name}</h1>
           <p className="mt-3 text-sm opacity-80">Rejoignez notre programme de fidélité</p>
-          {program ? (
+          {program && cheapest ? (
             <p
               className="mx-auto mt-6 inline-block rounded-lg px-4 py-2.5 text-sm font-semibold"
               style={{ background: `${cardText}1f`, border: `1px solid ${cardText}3d` }}
             >
-              {program.reward_threshold} visites = {program.reward_name}
+              {cheapest.points_cost} {program.mode === "amount" ? "points" : "visites"} ={" "}
+              {cheapest.name}
             </p>
           ) : null}
         </div>

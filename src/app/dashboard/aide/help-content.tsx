@@ -151,11 +151,21 @@ export function HelpContent({ joinUrl }: { joinUrl: string }) {
           </p>
         </Section>
 
-        <Section icon={Gift} title="Les récompenses se déclenchent seules">
+        <Section icon={Gift} title="Le client choisit sa récompense">
           <p>
-            Dès qu&apos;un client atteint le seuil, sa récompense apparaît sur sa carte et dans
-            votre onglet Récompenses. Vous la marquez comme utilisée d&apos;un clic quand il en
-            profite — elle ne peut pas être utilisée deux fois.
+            Dans Fidélité, vous composez un <strong>catalogue</strong> : par exemple un café à 10
+            points, un dessert à 25, un menu à 60. Les points de vos clients ne se consomment pas
+            tout seuls — ils s&apos;accumulent jusqu&apos;à ce que le client décide d&apos;échanger.
+          </p>
+          <p>
+            L&apos;échange se fait <strong>depuis le scanner</strong>, au moment où le client est
+            devant vous : sa carte s&apos;ouvre, vous voyez ce qu&apos;il peut s&apos;offrir, vous
+            appuyez sur Échanger. Les points sont débités aussitôt, et l&apos;opération ne peut pas
+            être comptée deux fois.
+          </p>
+          <p>
+            Mettez toujours une récompense accessible en bas de catalogue et une plus ambitieuse en
+            haut : la première rassure, la seconde fait revenir.
           </p>
         </Section>
 

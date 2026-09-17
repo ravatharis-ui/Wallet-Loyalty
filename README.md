@@ -48,6 +48,8 @@ pnpm dev
    - `20260105000000_referral.sql` — parrainage, `apply_points` et `add_visit` mis à jour
    - `20260106000000_referral_guards.sql` — garde-fous du parrainage (achat
      minimum, plafond mensuel) et `add_visit` mis à jour
+   - `20260107000000_reward_tiers.sql` — catalogue de paliers, `redeem_reward`,
+     et `add_visit` qui ne consomme plus les points
 3. Dans **Authentication → Providers → Email**, activer Email/Password.
    Pour le MVP, désactiver « Confirm email » afin que l'inscription commerçant
    ouvre directement le dashboard (sinon le commerçant doit confirmer son email

@@ -4,7 +4,14 @@ import { appUrl } from "@/lib/env";
 import { sendEmail } from "@/lib/email/send";
 import { welcomeEmail, cardRecoveryEmail } from "@/lib/email/templates";
 import { canSendEmails, subscriptionAccess } from "@/lib/loyalty";
-import type { Business, Customer, LoyaltyProgram, MessageType, Subscription } from "@/lib/db.types";
+import type {
+  Business,
+  Customer,
+  LoyaltyProgram,
+  MessageType,
+  RewardTier,
+  Subscription,
+} from "@/lib/db.types";
 
 /**
  * Remise du lien de la carte au client.
@@ -19,20 +26,29 @@ async function deliverCard(
   if (!customer.email) return;
 
   const admin = createSupabaseAdminClient();
-  const [{ data: business }, { data: subscription }, { data: program }] = await Promise.all([
-    admin.from("businesses").select("*").eq("id", customer.business_id).maybeSingle<Business>(),
-    admin
-      .from("subscriptions")
-      .select("*")
-      .eq("business_id", customer.business_id)
-      .maybeSingle<Subscription>(),
-    admin
-      .from("loyalty_programs")
-      .select("*")
-      .eq("business_id", customer.business_id)
-      .eq("active", true)
-      .maybeSingle<LoyaltyProgram>(),
-  ]);
+  const [{ data: business }, { data: subscription }, { data: program }, { data: tiers }] =
+    await Promise.all([
+      admin.from("businesses").select("*").eq("id", customer.business_id).maybeSingle<Business>(),
+      admin
+        .from("subscriptions")
+        .select("*")
+        .eq("business_id", customer.business_id)
+        .maybeSingle<Subscription>(),
+      admin
+        .from("loyalty_programs")
+        .select("*")
+        .eq("business_id", customer.business_id)
+        .eq("active", true)
+        .maybeSingle<LoyaltyProgram>(),
+      admin
+        .from("reward_tiers")
+        .select("*")
+        .eq("business_id", customer.business_id)
+        .eq("active", true)
+        .order("points_cost", { ascending: true })
+        .limit(1)
+        .returns<RewardTier[]>(),
+    ]);
 
   if (!business) return;
   if (!canSendEmails(subscriptionAccess(subscription ?? null))) return;
@@ -47,9 +63,11 @@ async function deliverCard(
     type === "welcome"
       ? welcomeEmail({
           ...ctx,
-          rewardLine: program
-            ? `${program.reward_threshold} visites = ${program.reward_name}`
-            : null,
+          // La première marche du catalogue : celle qui donne envie de revenir.
+          rewardLine:
+            program && tiers && tiers.length > 0
+              ? `${tiers[0].points_cost} ${program.mode === "amount" ? "points" : "visites"} = ${tiers[0].name}`
+              : null,
         })
       : cardRecoveryEmail(ctx);
 
